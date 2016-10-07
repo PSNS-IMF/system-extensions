@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Psns.Common.SystemExtensions</id>
+    <title>Psns.Common.SystemExtensions</title>
+    <authors>PSNS</authors>
+    <owners>109.14</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Some helpful extension methods</description>
+    <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
+    <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
+    <releaseNotes>
+      ## 1.0.0.0
+      ### Features
+      * Initial release
+    </releaseNotes>
+    <version>$version$</version>
+    <tags>PSNS</tags>
+    <dependencies>
+      <dependency id="Psns.Common.Logging" version="1.0.0.4" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Psns.Common.SystemExtensions\bin\$configuration$\Psns.Common.SystemExtensions.*" target="lib\net45\" exclude="**\*.dll.config;**\*Tests*;**\*Test*" />
+  </files>
+</package>
