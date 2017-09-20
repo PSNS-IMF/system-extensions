@@ -10,6 +10,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 1.0.0.1
+      ### Features
+      * Adding ProcessState and removing conflicting functions
+
       ## 1.0.0.0
       ### Features
       * Initial release
@@ -17,7 +21,8 @@
     <version>$version$</version>
     <tags>PSNS</tags>
     <dependencies>
-      <dependency id="Psns.Common.Logging" version="1.0.0.4" />
+      <dependency id="Psns.Common.Logging" version="2.0.0.2" />
+      <dependency id="LanguageExt.Core" version="[1.9.7]" />
     </dependencies>
   </metadata>
   <files>
