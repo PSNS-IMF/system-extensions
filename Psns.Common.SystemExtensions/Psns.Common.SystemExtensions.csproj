@@ -40,7 +40,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Psns.Common.Logging, Version=2.0.0.2, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Psns.Common.Logging.2.0.0.2\lib\net45\Psns.Common.Logging.dll</HintPath>
+      <HintPath>..\packages\Psns.Common.Logging.2017.9.20.1\lib\net45\Psns.Common.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
