@@ -1,6 +1,6 @@
-﻿using System;
+﻿using LanguageExt;
+using System;
 using System.Threading.Tasks;
-using LanguageExt;
 using static LanguageExt.Prelude;
 
 namespace Psns.Common.SystemExtensions
@@ -29,5 +29,17 @@ namespace Psns.Common.SystemExtensions
 
         public static Either<L, Ret> Regardless<L, R, Ret>(this Either<L, R> self, Func<Either<L, Ret>> func) =>
             self.Bind(Right: t => func(), Left: ex => func());
+
+        public static async Task<Either<Exception, R>> TryAsync<R>(Func<Task<R>> func)
+        {
+            try
+            {
+                return await func();
+            }
+            catch(Exception e)
+            {
+                return e;
+            }
+        }
     }
 }

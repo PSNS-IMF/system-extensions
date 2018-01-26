@@ -10,6 +10,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 1.0.0.2
+      ### Features
+      * Fixed issue with ConnectAsync not awaiting OpenAsync
+
       ## 1.0.0.1
       ### Features
       * Adding ProcessState and removing conflicting functions

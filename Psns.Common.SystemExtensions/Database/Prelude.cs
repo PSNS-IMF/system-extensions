@@ -1,8 +1,9 @@
-﻿using System;
+﻿using LanguageExt;
+using System;
 using System.Data;
 using System.Threading.Tasks;
-using LanguageExt;
 using static LanguageExt.Prelude;
+using static Psns.Common.SystemExtensions.LanguageExtExtensions;
 
 namespace Psns.Common.SystemExtensions.Database
 {
@@ -22,7 +23,7 @@ namespace Psns.Common.SystemExtensions.Database
                         use(factory(cString),
                             connection =>
                                 bindAsync(
-                                    Try(() => openAsync(connection)).ToEither(),
+                                    TryAsync(() => openAsync(connection)),
                                     conn => func(conn))));
 
         /// <summary>
