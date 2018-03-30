@@ -10,10 +10,13 @@
     <RootNamespace>SystemExtensions.FUnitTests</RootNamespace>
     <AssemblyName>SystemExtensions.FUnitTests</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>SystemExtensions.FUnitTests</Name>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,49 +56,29 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="DatabaseTests.fs" />
-    <None Include="Script.fsx" />
     <Content Include="packages.config" />
-    <None Include="Foq.Usage.fsx" />
     <Content Include="App.config" />
+    <Compile Include="CreateCommandTests.fs" />
+    <Compile Include="BeginTransactionTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">
       <HintPath>..\packages\Foq.1.7.3\lib\net45\Foq.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.3.2\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="FsUnit.MsTest">
-      <HintPath>..\packages\Fs30Unit.MsTest.3.0.0\lib\net40\FsUnit.MsTest.dll</HintPath>
+    <Reference Include="FsUnit.NUnit">
+      <HintPath>..\packages\FsUnit.3.1.0\lib\net46\FsUnit.NUnit.dll</HintPath>
     </Reference>
-    <Reference Include="LanguageExt.Core">
-      <HintPath>..\packages\LanguageExt.Core.1.9.7\lib\net45\LanguageExt.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="mscorlib" />
-    <Reference Include="NHamcrest">
-      <HintPath>..\packages\Fs30Unit.MsTest.3.0.0\lib\net40\NHamcrest.dll</HintPath>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Reactive.Core">
-      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq">
-      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>..\packages\System.Reactive.PlatformServices.3.1.1\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Psns.Common.SystemExtensions\Psns.Common.SystemExtensions.csproj">

@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using LanguageExt;
-using static LanguageExt.Prelude;
+﻿using Psns.Common.Functional;
+using System.Diagnostics;
+using static Psns.Common.Functional.Prelude;
 
 namespace Psns.Common.SystemExtensions.Diagnostics
 {
@@ -20,12 +20,12 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// <summary>
         /// The backing kernel Process
         /// </summary>
-        readonly Option<Process> _process;
+        readonly Maybe<Process> _process;
 
         /// <summary>
         /// A unique identifier
         /// </summary>
-        readonly Option<string> _id;
+        readonly Maybe<string> _id;
 
         /// <summary>
         /// Determines range based on the Process arguments
@@ -38,7 +38,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             _id = id;
         }
 
-        ProcessState(Option<Process> process, string id)
+        ProcessState(Maybe<Process> process, string id)
         {
             _process = process;
             _id = id;
@@ -53,8 +53,8 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             var self = this;
 
             return _process.Match(
-                Some: process => self.IsProcessAttached() ? process.ExitCode : Constants.NO_PROCESS_ATTACHED,
-                None: () => 0);
+                some: process => self.IsProcessAttached() ? process.ExitCode : Constants.NO_PROCESS_ATTACHED,
+                none: () => 0);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// </summary>
         /// <returns></returns>
         public string Id => 
-            _id.Match(Some: id => id, None: () => string.Empty);
+            _id.Match(some: id => id, none: () => string.Empty);
 
         /// <summary>
         /// Determines if underlying Process still has a valid kernel handle
@@ -70,8 +70,8 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// <returns></returns>
         bool IsProcessAttached() =>
             _process.Match(
-                Some: p => Try(() => p.Id).Match(Succ: id => true, Fail: ex => false),
-                None: () => false);
+                some: p => Try(() => p.Id).Match(success: id => true, fail: ex => false),
+                none: () => false);
 
         /// <summary>
         /// Safely wait for underlying Process to exit (if attached)
@@ -82,20 +82,20 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             var self = this;
 
             return _process.Match(
-                Some: process =>
-                    match(self.IsProcessAttached(),
-                        with(true, _ =>
-                            match(process.HasExited,
-                                with(true, __ => false),
-                                otherwise<bool, bool>(__ =>
+                some: process =>
+                    Match(self.IsProcessAttached(),
+                        AsEqual(true, _ =>
+                            Match(process.HasExited,
+                                AsEqual(true, __ => false),
+                                __ =>
                                 {
                                     process.WaitForExit();
                                     process.Dispose();
 
                                     return true;
-                                }))),
-                        otherwise<bool, bool>(_ => false)),
-                None: () => false);
+                                })),
+                        _ => false),
+                none: () => false);
         }
 
         public override bool Equals(object obj)

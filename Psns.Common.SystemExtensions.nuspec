@@ -10,6 +10,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 1.0.0.3
+      ### Features
+      * Adding in some functional helpers and Monads.
+
       ## 1.0.0.2
       ### Features
       * Fixed issue with ConnectAsync not awaiting OpenAsync
@@ -24,10 +28,6 @@
     </releaseNotes>
     <version>$version$</version>
     <tags>PSNS</tags>
-    <dependencies>
-      <dependency id="Psns.Common.Logging" version="2017.9.20.1" />
-      <dependency id="LanguageExt.Core" version="[1.9.7]" />
-    </dependencies>
   </metadata>
   <files>
     <file src="Psns.Common.SystemExtensions\bin\$configuration$\Psns.Common.SystemExtensions.*" target="lib\net45\" exclude="**\*.dll.config;**\*Tests*;**\*Test*" />

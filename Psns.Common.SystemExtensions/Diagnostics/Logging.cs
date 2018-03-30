@@ -1,96 +1,62 @@
-﻿using System;
+﻿using Psns.Common.Functional;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using LanguageExt;
-using Psns.Common.Logging;
-using static LanguageExt.Prelude;
+using static Psns.Common.Functional.Prelude;
 
 namespace Psns.Common.SystemExtensions.Diagnostics
 {
+    /// <summary>
+    /// A function that writes a log message.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="category"></param>
+    /// <param name="eventType">The type of event to log</param>
+    public delegate void Log(string message, string category, TraceEventType eventType);
+
+    /// <summary>
+    /// A function that formats bench mark data for logging.
+    /// </summary>
+    /// <param name="currentThreadId"></param>
+    /// <param name="runtime"></param>
+    /// <param name="currentProcessMemoryUsage">In MB</param>
+    /// <param name="description"></param>
+    /// <returns><see cref="string" to be logged/></returns>
+    public delegate string FormatBenchmarkStats(int currentThreadId, TimeSpan runtime, long currentProcessMemoryUsage, string description);
+
     public static partial class Prelude
     {
-        // Just a bunch of functional friendly logging functions and extension methods
-
-        public static Logging.ILogger Logger;
-        public static NLog.ILogger BenchmarkLogger;
-
-        public static T LogIf<T>(this T self,
-            Func<T, bool> predicate,
-            Func<T, string> format,
-            string category = "General",
-            TraceEventType type = TraceEventType.Information) =>
-                predicate(self)
-                    ? Log(self, format, category, type)
-                    : self;
-
-        public static T LogError<T>(this T self, Func<T, string> format) =>
-            Log(self, format, type: TraceEventType.Error);
-
-        public static T LogInfo<T>(this T self, Func<T, string> format) =>
-            Log(self, format);
-
-        public static T LogVerbose<T>(this T self, Func<T, string> format, string category) =>
-            Log(self, format, category, TraceEventType.Verbose);
-
-        public static T Log<T>(
-            this T self,
-            Func<T, string> format,
-            string category = "General",
-            TraceEventType type = TraceEventType.Information)
-        {
-            if(Logger == null)
-                throw new NullReferenceException("Psns.Common.SystemExtensions.Diagnostics.Logger must be initialized");
-
-            Logger.Write(format(self), type, category);
-            return self;
-        }
-
-        public static Either<Exception, R> LogEither<R>(
-            this R r,
-            Func<R, string> format,
-            string category = "General",
-            TraceEventType type = TraceEventType.Information) =>
-                r.Log(format, category, type);
+        public const string GeneralLogCategory = "General";
+        public const TraceEventType DefaultLogEventType = TraceEventType.Information;
 
         #region Benchmark
 
-        public static T LogBench<T>(this T self, Action<T> func, string description = "") =>
-            logBench(() => { func(self); return self; }, description);
+        public static T Benchmark<T>(this Log self, T val, Action<T> func, string description = "") =>
+            self.Benchmark(() => { func(val); return val; }, description, None);
 
-        public static R LogBench<T, R>(this T self, Func<T, R> func, string description = "") =>
-            logBench(() => func(self), description);
+        public static R Benchmark<T, R>(this Log self, T val, Func<T, R> func, string description = "") =>
+            self.Benchmark(() => func(val), description, None);
 
-        public static Unit logBench(Action act, string description = "") =>
-            logBench(() => { act(); return unit; }, description);
+        public static UnitValue Benchmark(this Log self, Action act, string description = "") =>
+            self.Benchmark(() => { act(); return Unit; }, description, None);
 
         public static Func<Either<L, R>> ComposeWithBench<T1, R, L>(
             this Func<T1, Either<L, R>> self,
+            Log logger,
             Func<Either<L, T1>> func,
             string description = "") =>
-            () => func().Match(Right: t1 => logBench(() => self(t1), description), Left: ex => ex);
+            () => func().Match(
+                right: t1 => logger.Benchmark(() => self(t1), description, None),
+                left: ex => ex);
 
-        public static T logBench<T>(
-            Func<T> func,
-            string description = "")
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-
-            var val = func();
-
-            stopWatch.Stop();
-
-            var span = stopWatch.Elapsed;
-
-            log(description, span);
-
-            return val;
-        }
-
-        public static async Task<T> logBenchAsync<T>(
+        public static async Task<T> BenchmarkAsync<T>(
+            this Log self,
             Func<Task<T>> func,
-            string description = "")
+            string description,
+            Maybe<FormatBenchmarkStats> format,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -101,29 +67,118 @@ namespace Psns.Common.SystemExtensions.Diagnostics
 
             var span = stopWatch.Elapsed;
 
-            log(description, span);
-
-            return val;
+            return self.Log(
+                val,
+                Format(format, span, description),
+                category,
+                type);
         }
 
-        static void log(string description, TimeSpan span)
+        public static T Benchmark<T>(
+            this Log self,
+            Func<T> func,
+            string description,
+            Maybe<FormatBenchmarkStats> format,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType)
         {
-            if(BenchmarkLogger == null)
-                throw new NullReferenceException("Psns.Common.SystemExtensions.Diagnostics.BenchmarkLogger must be initialized");
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
 
-            BenchmarkLogger.Info(
-                "{0},{1},{2},{3}",
-                Thread.CurrentThread.ManagedThreadId.ToString(),
-                description,
-                string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                    span.Hours,
-                    span.Minutes,
-                    span.Seconds,
-                    span.Milliseconds / 10),
-                getMemoryUsage().ToString());
+            var val = func();
+
+            stopWatch.Stop();
+
+            var span = stopWatch.Elapsed;
+
+            return self.Log(
+                val,
+                Format(format, span, description),
+                category,
+                type);
         }
+
+        static string Format(Maybe<FormatBenchmarkStats> format, TimeSpan span, string description) =>
+            format.Match(
+                some: fmt => fmt(
+                    Thread.CurrentThread.ManagedThreadId,
+                    span,
+                    getMemoryUsage(),
+                    description),
+                none: () => string.Format(
+                    "{0},{1},{2},{3}",
+                    Thread.CurrentThread.ManagedThreadId,
+                    description,
+                    string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                        span.Hours,
+                        span.Minutes,
+                        span.Seconds,
+                        span.Milliseconds / 10),
+                    getMemoryUsage()));
 
         public static long getMemoryUsage() => Process.GetCurrentProcess().PrivateMemorySize64 / 1000000;
         #endregion
+
+        public static T Debug<T>(this Log self, T t) =>
+            self.Log(t, type: TraceEventType.Verbose);
+
+        public static T Debug<T>(this Log self, string message) =>
+            self.Log<T>(message, type: TraceEventType.Verbose);
+
+        public static T Debug<T>(this Log self, T t, string message) =>
+            t.Tap(_ => self.Debug(message));
+
+        public static T Info<T>(this Log self, T t) =>
+            self.Log(t, type: TraceEventType.Information);
+
+        public static T Info<T>(this Log self, string message) =>
+            self.Log<T>(message, type: TraceEventType.Information);
+
+        public static T Info<T>(this Log self, T t, string message) =>
+            t.Tap(_ => self.Info(message));
+
+        public static T Warning<T>(this Log self, T t) =>
+            self.Log(t, type: TraceEventType.Warning);
+
+        public static T Warning<T>(this Log self, string message) =>
+            self.Log<T>(message, type: TraceEventType.Warning);
+
+        public static T Error<T>(this Log self, T t) =>
+            self.Log(t, type: TraceEventType.Error);
+
+        public static T Error<T>(this Log self, string message) =>
+            self.Log<T>(message, type: TraceEventType.Error);
+
+        public static T LogIf<T>(this Log self,
+            T val,
+            string message,
+            Func<T, bool> predicate,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                predicate(val)
+                    ? val.Tap(_ => self.Log(message, category, type))
+                    : val;
+
+        public static T Log<T>(
+            this Log self, 
+            string message, 
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                default(T).Tap(t => self.Log(val: message, type: type));
+
+        public static T Log<T>(
+            this Log self,
+            T val,
+            string message,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                val.Tap(_ => self(message, category, type));
+
+        public static T Log<T>(
+            this Log self,
+            T val,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                val.Tap(_ => self(val.ToString(), category, type));
     }
 }

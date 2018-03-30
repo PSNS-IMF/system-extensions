@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Psns.Common.Functional;
+using Psns.Common.SystemExtensions.Diagnostics;
+using System;
 using System.Threading;
-
-using Psns.Common.Logging;
 
 namespace Psns.Common.SystemExtensions
 {
@@ -21,11 +21,11 @@ namespace Psns.Common.SystemExtensions
         /// </summary>
         /// <param name="name">The name of the Mutex</param>
         /// <param name="work"></param>
-        /// <param name="waitTimeout"></param>
         /// <param name="logger">Optional logger for potentional Mutex debugging info</param>
+        /// <param name="waitTimeout"></param>
         /// <param name="runAnyway">If True, do work even if mutex can't be acquired</param>
         /// <returns>False if mutex wasn't acquired and work wasn't performed; otherwise, True</returns>
-        public static bool WithMutex(string name, Action work, int waitTimeout = Timeout.Infinite, ILogger logger = null, bool runAnyway = false)
+        public static bool WithMutex(string name, Action work, Maybe<Log> logger, int waitTimeout = Timeout.Infinite, bool runAnyway = false)
         {
             using(var mutex = new Mutex(false, name))
             {
@@ -40,7 +40,10 @@ namespace Psns.Common.SystemExtensions
                     catch(AbandonedMutexException e)
                     {
                         if(logger != null)
-                            logger.Warning(string.Format("Mutex was aquired, but another process didn't properly release it: {0}", e.GetExceptionChainMessages()));
+                            logger.IfSome(l => l.Warning(
+                                string.Format(
+                                    "Mutex was aquired, but another process didn't properly release it: {0}",
+                                    e.GetExceptionChainMessages())));
 
                         hasHandle = true;
                     }

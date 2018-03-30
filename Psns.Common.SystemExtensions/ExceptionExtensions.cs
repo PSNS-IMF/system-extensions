@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
 
 namespace Psns.Common.SystemExtensions
 {
@@ -26,6 +29,32 @@ namespace Psns.Common.SystemExtensions
             }
 
             return messageBuilder.ToString();
+        }
+
+        public static string GetExceptionChainMessagesWithSql(this Exception self)
+        {
+            var builder = new StringBuilder();
+
+            var sqlException = self is SqlException
+                ? self as SqlException
+                : self.InnerException is SqlException
+                    ? self.InnerException as SqlException
+                    : null;
+
+            if (sqlException != null)
+            {
+                builder.Append($@"ErrorCode: {sqlException.ErrorCode}, Number: {sqlException.Number}, ");
+
+                var errors = new SqlError[sqlException.Errors.Count];
+                sqlException.Errors.CopyTo(errors, 0);
+
+                builder.Append("Errors: [");
+                builder.Append(string.Join(", ", errors.Select((error, index) =>
+                    $"{{ Index: {index} Message:{error.Message} Number:{error.Number} SPName: {error.Procedure} Line Number: {error.LineNumber} }}")));
+                builder.Append("]");
+            }
+
+            return self.GetExceptionChainMessages() + Environment.NewLine + builder.ToString();
         }
     }
 }

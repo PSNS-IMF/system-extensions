@@ -3,43 +3,72 @@
 open System
 open System.Data
 open System.Threading.Tasks
-open Microsoft.VisualStudio.TestTools.UnitTesting
-open LanguageExt
+open Psns.Common.Functional
 open Foq
-open FsUnit.MsTest
+open NUnit.Framework
+open FsUnit
 
-open Psns.Common.SystemExtensions.Database
-
-type ext = LanguageExt.Prelude
+type ext = Psns.Common.Functional.Prelude
 type db = Psns.Common.SystemExtensions.Database.Prelude
 
-[<TestClass>]
-type ``when connecting`` () as self =
+// Connect Tests
+let factory connection = Func<IDbConnection>(fun () -> connection)
+let funFactory map = Func<IDbConnection, string> map
 
-    let asString (e : Either<exn, string>) = e.Match((fun s -> s), (fun e -> e.Message))
-    let mockConnection = Mock<IDbConnection>().Create()
+let ok _ = "result"
+let fail _ = failwith "fail"
 
-    member this.run(?buildConn0 : Func<Either<Exception, string>>, ?factory0 : Func<string, IDbConnection>, ?openAsync0 : Func<IDbConnection, Task<IDbConnection>>, ?action0 : Func<IDbConnection, Task<Either<Exception, string>>>) =
-        let buildConnectionString = defaultArg buildConn0 (Func<Either<Exception, string>>(fun () -> ext.Right<Exception, string>("string")))
-        let connectionFactory = defaultArg factory0 (Func<string, IDbConnection>(fun _ -> mockConnection))
-        let openAsync = defaultArg openAsync0 (Func<IDbConnection, Task<IDbConnection>>(fun _ -> mockConnection.Open() |> fun _ -> Task.FromResult mockConnection))
-        let action = defaultArg action0 (Func<IDbConnection, Task<Either<Exception, string>>>(fun _ -> Task.FromResult (ext.Right<Exception, string>("result"))))
+let eval map conn = db.Connect().Invoke(factory conn, funFactory map).Match((fun s -> s), (fun e -> e.Message))
 
-        asString (db.ConnectAsync(buildConnectionString, connectionFactory, openAsync, action).Result)
+let evalOk = eval ok
+let evalFail = eval fail
 
-    [<TestMethod>] 
-    member this.``it should return the result of the given action function.`` () =
-        self.run() |> should equal "result"
-        Mock.Verify(<@ mockConnection.Open() @>, once)
-        Mock.Verify(<@ mockConnection.Dispose() @>, once)
+[<Test>]
+let ``it should return the result of the given function.`` () =
+    let connection = Mock<IDbConnection>().Create()
 
-    [<TestMethod>] 
-    member this.``it should return error text if buildConnectionString fails.`` () =
-        let buildConnFail = Func<Either<Exception, string>>(fun () -> ext.Left<Exception, string>(exn "failure"))
-        self.run(buildConn0 = buildConnFail) |> should equal "failure"
+    evalOk connection |> should equal "result"
+    verify <@ connection.Dispose() @> once
 
-    [<TestMethod>] 
-    member this.``it should return error text if openAsync throws.`` () =
-        let openAsyncFail = Func<IDbConnection, Task<IDbConnection>>(fun _ -> failwith "failure")
-        self.run(openAsync0 = openAsyncFail) |> should equal "failure"
-        Mock.Verify(<@ mockConnection.Dispose() @>, once)
+[<Test>]
+let ``it should return error text if action fails.`` () =
+    let connection = Mock<IDbConnection>().Create()
+
+    evalFail connection |> should equal "fail"
+    verify <@ connection.Dispose() @> once
+
+// ConnectAsync Tests
+let asTask func = func >> Task.FromResult
+let openAsync func = Func<IDbConnection, Task<IDbConnection>> func
+let openOk = openAsync (asTask (fun cn -> cn))
+let openFail = openAsync (fun _ -> failwith "fail")
+
+let connectAsync conn openAsync map =
+    db.ConnectAsync().Invoke(factory conn, openAsync, Func<IDbConnection, Task<string>> map)
+
+let evalAsync openAsync map conn = (connectAsync conn openAsync (asTask map)).Match((fun s -> s), (fun e -> e.Message)).Result
+
+let evalOkAsync = evalAsync openOk ok
+let evalFailAsync = evalAsync openOk fail
+let openAsyncFail = evalAsync openFail ok
+
+[<Test>]
+let ``it should return the result of the given async function.`` () =
+    let connection = Mock<IDbConnection>().Create()
+
+    evalOkAsync connection |> should equal "result"
+    verify <@ connection.Dispose() @> once
+
+[<Test>]
+let ``it should return error text if openAsync fails.`` () =
+    let connection = Mock<IDbConnection>().Create()
+
+    openAsyncFail connection |> should equal "fail"
+    verify <@ connection.Dispose() @> once
+
+[<Test>]
+let ``it should return error text if action async fails.`` () =
+    let connection = Mock<IDbConnection>().Create()
+
+    evalFailAsync connection |> should equal "fail"
+    verify <@ connection.Dispose() @> once
