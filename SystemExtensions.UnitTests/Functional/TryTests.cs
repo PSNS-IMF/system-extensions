@@ -2,9 +2,9 @@
 using Psns.Common.Functional;
 using System;
 using System.Threading.Tasks;
-using static SystemExtensions.UnitTests.Functional.Ext;
 using static NUnit.StaticExpect.Expectations;
 using static Psns.Common.Functional.Prelude;
+using static SystemExtensions.UnitTests.Functional.Ext;
 
 namespace SystemExtensions.UnitTests.Functional
 {
@@ -46,26 +46,26 @@ namespace SystemExtensions.UnitTests.Functional
         [Test]
         public void TryOfUnit_WithException_ReturnsException() =>
             Expect(
-                Try(() => throw new Exception(FailVal)).Match(unit => OkVal, e => FailVal), 
+                failingTry.Match(unit => OkVal, e => FailVal), 
                 EqualTo(FailVal));
 
         [Test]
         public void Try_WithException_AndEither_ReturnsEither() =>
             Expect(
-                Try(() => throw new Exception(FailVal)).Match(_ => OkVal, _ => FailVal, f => f), 
+                failingTry.Match(_ => OkVal, _ => FailVal, f => f), 
                 EqualTo(FailVal));
 
         [Test]
         public async Task TryAsync_WithException_ReturnsException() =>
             Expect(
-                await TryAsync(() => Task.Delay(1).ContinueWith<string>(t => throw new Exception(FailVal)))
+                await TryAsync(() => Task.Delay(1).ContinueWith(failingTask))
                     .Match(s => s, _ => FailVal),
                 EqualTo(FailVal));
 
         [Test]
         public async Task TryAsync_WithException_AndEither_ReturnsException() =>
             Expect(
-                await TryAsync(() => Task.Delay(1).ContinueWith<string>(t => throw new Exception(FailVal)))
+                await TryAsync(() => Task.Delay(1).ContinueWith(failingTask))
                     .Match(s => s, _ => FailVal, s => s),
                 EqualTo(FailVal));
 
@@ -93,7 +93,7 @@ namespace SystemExtensions.UnitTests.Functional
         public async Task BindingAsync_SuccessWithFailure_ReturnsValue() =>
             Expect(
                 await TryAsync(() => Task.Delay(1).ContinueWith(t => OkVal))
-                    .Bind(first => TryAsync(() => Task.Delay(1).ContinueWith<string>(t => throw new Exception(FailVal))))
+                    .Bind(first => TryAsync(() => Task.Delay(1).ContinueWith(failingTask)))
                     .Match(s => s, _ => FailVal),
                 EqualTo(FailVal));
 
@@ -110,8 +110,15 @@ namespace SystemExtensions.UnitTests.Functional
         public const string FailVal = "fail";
         public const string EitherVal = "either";
 
-        public static Try<string> failingTry => 
-            () => throw new Exception();
+        public static Try<string> failingTry => () =>
+            {
+                throw new Exception(FailVal);
+            };
+
+        public static Func<Task, string> failingTask => task =>
+            {
+                throw new Exception(FailVal);
+            };
 
         public static string doTry(Try<string> self) =>
             self.Match(val => val, _ => FailVal);
