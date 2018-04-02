@@ -22,7 +22,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
     /// <param name="runtime"></param>
     /// <param name="currentProcessMemoryUsage">In MB</param>
     /// <param name="description"></param>
-    /// <returns><see cref="string" to be logged/></returns>
+    /// <returns><see cref="string"/> to be logged</returns>
     public delegate string FormatBenchmarkStats(int currentThreadId, TimeSpan runtime, long currentProcessMemoryUsage, string description);
 
     public static partial class Prelude

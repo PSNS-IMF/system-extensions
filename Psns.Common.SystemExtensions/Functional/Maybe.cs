@@ -7,10 +7,15 @@ namespace Psns.Common.Functional
     {
         public static Maybe<T> Possible<T>(T t) => t;
 
-        public static Maybe<T> Some<T>(T t) =>
-            IsNull(t)
-                ? throw new ArgumentNullException($"{nameof(t)} cannot be null")
-                : t;
+        public static Maybe<T> Some<T>(T t)
+        {
+            if (IsNull(t))
+            {
+                throw new ArgumentNullException($"{nameof(t)} cannot be null");
+            }
+
+            return t;
+        }
 
         public static MaybeNone None =>
             MaybeNone.Default;

@@ -103,10 +103,15 @@ namespace Psns.Common.Functional
         /// <param name="source">An optional string to be used as the Exception Message</param>
         /// <exception cref="System.ArgumentNullException"></exception>
         /// <returns>The <paramref name="value"/> if not null</returns>
-        public static T AssertValue<T>(this T value, string source = null) =>
-            IsNull(value)
-                ? throw new ArgumentNullException(source ?? nameof(T))
-                : value;
+        public static T AssertValue<T>(this T value, string source = null)
+        {
+            if (IsNull(value))
+            {
+                throw new ArgumentNullException(source ?? nameof(T));
+            }
+            
+            return value;
+        }
 
         public static Func<R> fun<R>(Func<R> f) => f;
 

@@ -83,12 +83,17 @@ namespace Psns.Common.Functional
                 : IsLeft
                     ? this : other;
 
-        public Ret Match<Ret>(Func<R, Ret> right, Func<L, Ret> left) =>
-            IsNone
-                ? throw new InvalidOperationException($"Either<{nameof(L)}, {nameof(R)}> of state None does not match Left or Right")
-                : IsLeft
-                    ? left(_left)
-                    : right(_right);
+        public Ret Match<Ret>(Func<R, Ret> right, Func<L, Ret> left)
+        {
+            if (IsNone)
+            {
+                throw new InvalidOperationException($"Either<{nameof(L)}, {nameof(R)}> of state None does not match Left or Right");
+            }
+
+            return IsLeft
+                ? left(_left)
+                : right(_right);
+        }
 
         public static Either<L, R> None = new Either<L, R>();
 
