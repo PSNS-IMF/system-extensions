@@ -13,12 +13,12 @@ type db = Psns.Common.SystemExtensions.Database.Prelude
 
 // Connect Tests
 let factory connection = Func<IDbConnection>(fun () -> connection)
-let funFactory map = Func<IDbConnection, string> map
+let funFactory map = Func<IDbConnection, Try<string>> map
 
-let ok _ = "result"
-let fail _ = failwith "fail"
+let ok _ = ext.Try(fun () -> "result")
+let fail _ = ext.Try(fun () -> failwith "fail")
 
-let eval map conn = db.Connect().Invoke(factory conn, funFactory map).Match((fun s -> s), (fun e -> e.Message))
+let eval map conn = db.Connect().Invoke(funFactory map, factory conn).Match((fun s -> s), (fun e -> e.Message))
 
 let evalOk = eval ok
 let evalFail = eval fail
@@ -44,13 +44,15 @@ let openOk = openAsync (asTask (fun cn -> cn))
 let openFail = openAsync (fun _ -> failwith "fail")
 
 let connectAsync conn openAsync map =
-    db.ConnectAsync().Invoke(factory conn, openAsync, Func<IDbConnection, Task<string>> map)
+    db.ConnectAsync().Invoke(Func<IDbConnection, TryAsync<string>> map, openAsync, factory conn)
 
-let evalAsync openAsync map conn = (connectAsync conn openAsync (asTask map)).Match((fun s -> s), (fun e -> e.Message)).Result
+let evalAsync openAsync map conn = (connectAsync conn openAsync map).Match((fun s -> s), (fun e -> e.Message)).Result
 
-let evalOkAsync = evalAsync openOk ok
-let evalFailAsync = evalAsync openOk fail
-let openAsyncFail = evalAsync openFail ok
+let okAsync _ = ext.TryAsync(fun () -> Task.FromResult "result")
+let failAsync _ = ext.TryAsync(fun () -> Task.FromResult (failwith "fail"))
+let evalOkAsync = evalAsync openOk okAsync
+let evalFailAsync = evalAsync openOk failAsync
+let openAsyncFail = evalAsync openFail okAsync
 
 [<Test>]
 let ``it should return the result of the given async function.`` () =

@@ -95,6 +95,22 @@ namespace Psns.Common.Functional
             }
         }
 
+        public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, R> user) where T : IDisposable =>
+            Try(() => Use(factory(), user));
+
+        public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, Try<R>> user) where T : IDisposable => () =>
+            Try(() => Use(factory, user))
+                .Match(t => t.Try(), e => new TryResult<R>(e));
+
+        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable =>
+            TryAsync(() => Use(factory(), user));
+
+        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, TryAsync<R>> user) where T : IDisposable => () =>
+            Try(() => Use(factory, user))
+                .Match(
+                    async t => await t.TryAsync(),
+                    e => new TryResult<R>(e).AsTask());
+
         /// <summary>
         /// Checks for null value
         /// </summary>
@@ -116,5 +132,7 @@ namespace Psns.Common.Functional
         public static Func<R> fun<R>(Func<R> f) => f;
 
         public static Func<T1, R> fun<T1, R>(Func<T1, R> f) => f;
+
+        public static Func<T1, T2, R> fun<T1, T2, R>(Func<T1, T2, R> f) => f;
     }
 }

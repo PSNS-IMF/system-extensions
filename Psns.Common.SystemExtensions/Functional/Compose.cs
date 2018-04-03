@@ -7,8 +7,11 @@ namespace Psns.Common.Functional
         public static Func<R> Compose<T, R>(this Func<T, R> self, Func<T> func) => () =>
             self(func());
 
-        public static Func<T1, T3> Compose<T1, T2, T3>(this Func<T2, T3> b, Func<T1, T2> a) =>
-            v => b(a(v));
+        public static Func<T1, R> Compose<T1, T2, R>(this Func<T2, R> self, Func<T1, T2> func) =>
+            t => self(func(t));
+
+        public static Func<T1, R> Compose<T1, T2, R>(this Func<T1, T2> self, Func<T2, R> func) =>
+            t => func(self(t));
 
         public static Func<R> Par<T1, R>(this Func<T1, R> self, T1 t1) => () =>
             self(t1);

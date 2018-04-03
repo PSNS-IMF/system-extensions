@@ -15,7 +15,7 @@ let fail _ = failwith "fail"
 
 let action run = Func<IDbCommand, string> run
 
-let eval run trans = db.CreateCommand().Invoke(trans, run).Match((fun s -> s), (fun e -> e.Message))
+let eval run trans = db.CreateCommand().Invoke(run, trans).Match((fun s -> s), (fun e -> e.Message))
 
 let createOk map = eval (action map)
 let evalOk = createOk ok
