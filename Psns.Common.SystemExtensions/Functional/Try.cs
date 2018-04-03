@@ -17,6 +17,12 @@ namespace Psns.Common.Functional
 
         public static TryAsync<UnitValue> TryAsync(Action tryDel) => () =>
             { tryDel(); return new TryResult<UnitValue>(Unit).AsTask(); };
+
+        public static Try<T> Fail<T>(Exception e) => () =>
+            new TryResult<T>(e);
+
+        public static TryAsync<T> FailAsync<T>(Exception e) => () =>
+            new TryResult<T>(e).AsTask();
     }
 
     public delegate TryResult<T> Try<T>();
@@ -88,9 +94,9 @@ namespace Psns.Common.Functional
         ///         if self fails, self's exception; 
         ///         otherwise, binder's exception.</returns>
         public static Try<R> Regardless<T, R>(this Try<T> self, Try<R> binder) => () =>
-            Map(self.Try(), res => 
-                binder.Match(r => r, e => res.IsFailure 
-                    ? new TryResult<R>(res.Exception) 
+            Map(self.Try(), res =>
+                binder.Match(r => r, e => res.IsFailure
+                    ? new TryResult<R>(res.Exception)
                     : e));
 
         public static TryAsync<R> Bind<T, R>(this Try<T> self, Func<T, TryAsync<R>> binder) => async () =>
@@ -142,8 +148,8 @@ namespace Psns.Common.Functional
 
         public static TryAsync<R> Regardless<T, R>(this TryAsync<T> self, TryAsync<R> binder) => async () =>
             await Map(await self.TryAsync(), res =>
-                binder.Match(r => r, e => res.IsFailure 
-                    ? new TryResult<R>(res.Exception) 
+                binder.Match(r => r, e => res.IsFailure
+                    ? new TryResult<R>(res.Exception)
                     : e));
 
         public static TryAsync<T> Regardless<T>(this TryAsync<T> self, TryAsync<UnitValue> binder) => async () =>
@@ -173,7 +179,7 @@ namespace Psns.Common.Functional
             {
                 return self();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return e;
             }
@@ -193,8 +199,11 @@ namespace Psns.Common.Functional
 
         public static R Match<T, R>(this Try<T> self, Func<T, R> success, Func<Exception, R> fail) =>
             Map(self.Try(), res => res.IsFailure
-                ? fail(res.Exception) 
+                ? fail(res.Exception)
                 : success(res.Value));
+
+        public static UnitValue Match<T>(this Try<T> self, Action<T> success, Action<Exception> fail) =>
+            self.Match(t => { success(t); return Unit; }, e => { fail(e); return Unit; });
 
         public static S Match<T, R, S>(this Try<T> self, Func<T, R> success, Func<Exception, R> fail, Func<R, S> onEither) =>
             Map(self.Match(success, fail), r => onEither(r));

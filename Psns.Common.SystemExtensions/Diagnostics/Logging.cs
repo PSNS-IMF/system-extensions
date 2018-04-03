@@ -128,6 +128,9 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public static T Debug<T>(this Log self, T t, string message) =>
             t.Tap(_ => self.Debug(message));
 
+        public static T Debug<T>(this Log self, T t, Func<T, string> func) =>
+            t.Tap(_ => self.Debug(func(t)));
+
         public static T Info<T>(this Log self, T t) =>
             self.Log(t, type: TraceEventType.Information);
 
@@ -137,17 +140,26 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public static T Info<T>(this Log self, T t, string message) =>
             t.Tap(_ => self.Info(message));
 
+        public static T Info<T>(this Log self, T t, Func<T, string> func) =>
+            t.Tap(_ => self.Info(func(t)));
+
         public static T Warning<T>(this Log self, T t) =>
             self.Log(t, type: TraceEventType.Warning);
 
         public static T Warning<T>(this Log self, string message) =>
             self.Log<T>(message, type: TraceEventType.Warning);
 
+        public static T Warning<T>(this Log self, T t, Func<T, string> func) =>
+            t.Tap(_ => self.Log<T>(func(t), type: TraceEventType.Warning));
+
         public static T Error<T>(this Log self, T t) =>
             self.Log(t, type: TraceEventType.Error);
 
         public static T Error<T>(this Log self, string message) =>
             self.Log<T>(message, type: TraceEventType.Error);
+
+        public static T Error<T>(this Log self, T t, Func<T, string> func) =>
+            t.Tap(_ => self.Log<T>(func(t), type: TraceEventType.Error));
 
         public static T LogIf<T>(this Log self,
             T val,
@@ -180,5 +192,13 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             string category = GeneralLogCategory,
             TraceEventType type = DefaultLogEventType) =>
                 val.Tap(_ => self(val.ToString(), category, type));
+
+        public static T Log<T>(
+            this Log self,
+            T val,
+            Func<T, string> func,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                val.Tap(_ => self(func(val), category, type));
     }
 }

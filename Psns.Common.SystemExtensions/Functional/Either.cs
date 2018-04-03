@@ -14,6 +14,16 @@ namespace Psns.Common.Functional
             self.Match(
                 t => binder(t).TryAsync(),
                 e => new TryResult<R>(e).AsTask());
+
+        public static Try<R> Bind<T, R>(this Either<Exception, T> self, Func<T, Try<R>> binder) => () =>
+            self.Match(
+                t => binder(t).Try(),
+                e => new TryResult<R>(e));
+
+        public static UnitValue Match<L, R>(this Either<L, R> self, Action<R> right, Action<L> left) =>
+            self.Match(
+                r => { right(r); return Unit; },
+                e => { left(e); return Unit; });
     }
 
     public struct Either<L, R>

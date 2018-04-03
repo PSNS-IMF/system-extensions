@@ -10,6 +10,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 1.0.0.4
+      ### Features
+      * Adding more overloads and helpers.
+
       ## 1.0.0.3
       ### Features
       * Adding in some functional helpers and Monads.

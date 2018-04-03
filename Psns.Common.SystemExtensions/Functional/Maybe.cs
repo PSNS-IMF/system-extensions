@@ -23,6 +23,9 @@ namespace Psns.Common.Functional
         public static bool IsNull<T>(T value) =>
             value == null
                 || (Nullable.GetUnderlyingType(typeof(T)) != null && value.Equals(default(T)));
+
+        public static UnitValue Match<T>(this Maybe<T> self, Action<T> some, Action none) =>
+            self.Match(t => { some(t); return Unit; }, () => { none(); return Unit; });
     }
 
     public struct Maybe<T>
