@@ -95,6 +95,22 @@ namespace Psns.Common.Functional
             }
         }
 
+        public static async Task<R> UseAsync<T, R>(T disposable, Func<T, Task<R>> user) where T : IDisposable
+        {
+            using (disposable)
+            {
+                return await user(disposable);
+            }
+        }
+
+        public static async Task<R> UseAsync<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable
+        {
+            using (var disposable = factory())
+            {
+                return await user(disposable);
+            }
+        }
+
         public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, R> user) where T : IDisposable =>
             Try(() => Use(factory(), user));
 
@@ -102,14 +118,15 @@ namespace Psns.Common.Functional
             Try(() => Use(factory, user))
                 .Match(t => t.Try(), e => new TryResult<R>(e));
 
-        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable =>
-            TryAsync(() => Use(factory(), user));
+        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable => async () =>
+            await TryAsync(() => UseAsync(factory(), user))
+                .Match(t => t, e => new TryResult<R>(e));
 
-        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, TryAsync<R>> user) where T : IDisposable => () =>
-            Try(() => Use(factory, user))
+        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, TryAsync<R>> user) where T : IDisposable => async () =>
+            await TryAsync(() => UseAsync(factory, f => user(f).TryAsync()))
                 .Match(
-                    async t => await t.TryAsync(),
-                    e => new TryResult<R>(e).AsTask());
+                    t => t,
+                    e => new TryResult<R>(e));
 
         /// <summary>
         /// Checks for null value
@@ -128,6 +145,8 @@ namespace Psns.Common.Functional
             
             return value;
         }
+
+        public static Action<T> act<T>(Action<T> self) => self;
 
         public static Func<R> fun<R>(Func<R> f) => f;
 

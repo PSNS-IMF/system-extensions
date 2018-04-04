@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Psns.Common.SystemExtensions.Diagnostics;
+using System;
+using System.Diagnostics;
 
 namespace Psns.Common.Functional
 {
@@ -24,6 +26,23 @@ namespace Psns.Common.Functional
             self.Match(
                 r => { right(r); return Unit; },
                 e => { left(e); return Unit; });
+
+        public static Either<L, Ret> Benchmark<L, R, Ret>(this Either<L, R> self, Func<R, Either<L, Ret>> binder, Maybe<Log> log, string description) =>
+            self.Match(
+                r => log.Match(l => l.Benchmark(() => binder(r), description, None), () => binder(r)),
+                l => Left<L, Ret>(l));
+
+        public static Either<LRet, R> Benchmark<L, R, LRet>(this Either<L, R> self, Func<L, Either<LRet, R>> binder, Maybe<Log> mLog, string description) =>
+            self.Match(
+                r => Right<LRet, R>(r),
+                l => mLog.Match(log => log.Benchmark(() => binder(l), description, None), () => binder(l)));
+
+        public static Either<L, R> Log<L, R>(this Either<L, R> self, Maybe<Log> mLog, Func<R, string> message, TraceEventType type = TraceEventType.Information) =>
+            self.Match(
+                r => mLog.Match(
+                    log => log.Info(r, message(r)),
+                    () => Right<L, R>(r)),
+                l => Left<L, R>(l));
     }
 
     public struct Either<L, R>

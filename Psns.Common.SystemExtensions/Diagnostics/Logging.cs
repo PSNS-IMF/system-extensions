@@ -161,6 +161,16 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public static T Error<T>(this Log self, T t, Func<T, string> func) =>
             t.Tap(_ => self.Log<T>(func(t), type: TraceEventType.Error));
 
+        public static T LogIf<T>(this Log self, 
+            T val, 
+            Func<T, bool> predicate, 
+            Func<T, string> message,
+            string category = GeneralLogCategory,
+            TraceEventType type = DefaultLogEventType) =>
+                predicate(val)
+                    ? val.Tap(_ => self.Log(message, category, type))
+                    : val;
+
         public static T LogIf<T>(this Log self,
             T val,
             string message,

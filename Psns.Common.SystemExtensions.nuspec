@@ -10,6 +10,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 1.0.0.5
+      ### Features
+      * Fixed issue with TryUse disposing of target before Task finishes.
+
       ## 1.0.0.4
       ### Features
       * Adding more overloads and helpers.

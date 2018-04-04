@@ -13,10 +13,10 @@ namespace Psns.Common.Functional
             { attempt(); return Unit; };
 
         public static TryAsync<T> TryAsync<T>(Func<Task<T>> tryDel) => async () => 
-            (TryResult<T>)(await tryDel());
+            new TryResult<T>(await tryDel());
 
-        public static TryAsync<UnitValue> TryAsync(Action tryDel) => () =>
-            { tryDel(); return new TryResult<UnitValue>(Unit).AsTask(); };
+        public static TryAsync<UnitValue> TryAsync(Func<Task> tryDel) => async () =>
+            { await tryDel(); return Unit; };
 
         public static Try<T> Fail<T>(Exception e) => () =>
             new TryResult<T>(e);

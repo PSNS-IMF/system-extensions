@@ -42,10 +42,6 @@ namespace SystemExtensions.UnitTests.Functional
             Expect(Resolve(Possible(default(TestValueType?))), EqualTo("none"));
 
         [Test]
-        public void DeElevating_OriginalValueReturned() =>
-            Expect((string)Some("test"), EqualTo("test"));
-
-        [Test]
         public void Binding_Somes_NewValueCreated() =>
             Expect(
                 Some("start")

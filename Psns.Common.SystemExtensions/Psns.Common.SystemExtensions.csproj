@@ -51,6 +51,7 @@
     <Compile Include="Functional\Compose.cs" />
     <Compile Include="Functional\Either.cs" />
     <Compile Include="Functional\Maybe.cs" />
+    <Compile Include="Functional\Parsing.cs" />
     <Compile Include="Functional\Prelude.cs" />
     <Compile Include="Functional\Try.cs" />
     <Compile Include="Functional\Unit.cs" />

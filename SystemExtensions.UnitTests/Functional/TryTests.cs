@@ -102,6 +102,50 @@ namespace SystemExtensions.UnitTests.Functional
             Expect(
                 doTry(Try(() => OkVal).Bind(_ => failingTry)),
                 EqualTo(FailVal));
+
+        [Test]
+        public async Task TryUse_DoesNotCallDisposeBeforeTaskFinishes()
+        {
+            var disposable = new Disposable();
+            var user = fun((Disposable d) => TryAsync(async () =>
+            {
+                await Task.Delay(500);
+                Expect(d.Disposed, False);
+            }));
+
+            var t = TryUse(() => disposable, user);
+
+            var result = await t.Match(u => "ok", e => "fail");
+
+            Expect(result, EqualTo("ok"));
+            Expect(disposable.Disposed, True);
+        }
+
+        class Disposable : IDisposable
+        {
+            #region IDisposable Support
+            public bool Disposed { get; private set; } = false;
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!Disposed)
+                {
+                    if (disposing)
+                    {
+                        // TODO: dispose managed state (managed objects).
+                    }
+
+                    Disposed = true;
+                }
+            }
+
+            // This code added to correctly implement the disposable pattern.
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+            #endregion
+        }
     }
 
     internal static class Ext

@@ -34,7 +34,7 @@ namespace Psns.Common.SystemExtensions.Database
             Func<IDbConnection, Task<IDbConnection>>,
             Func<IDbConnection>,
             TryAsync<T>> ConnectAsync<T>() => (func, openAsync, factory) =>
-                Use(factory, conn => TryAsync(() => openAsync(conn))).Bind(func);
+                Use(factory, conn => TryAsync(() => openAsync(conn)).Bind(func));
 
         /// <summary>
         /// Creates a function that tries to: 

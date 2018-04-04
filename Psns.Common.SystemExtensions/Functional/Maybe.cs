@@ -71,9 +71,6 @@ namespace Psns.Common.Functional
         public static implicit operator Maybe<T>(T t) =>
             new Maybe<T>(t);
 
-        public static implicit operator T(Maybe<T> m) =>
-            m._value;
-
         public static implicit operator Maybe<T>(MaybeNone none) =>
             None;
 
