@@ -147,14 +147,14 @@ namespace Psns.Common.Functional
                     : await binder(res.Value));
 
         public static TryAsync<R> Regardless<T, R>(this TryAsync<T> self, TryAsync<R> binder) => async () =>
-            await Map(await self.TryAsync(), res =>
-                binder.Match(r => r, e => res.IsFailure
+            await Map(await self.TryAsync(), async res =>
+                await binder.Match(r => r, e => res.IsFailure
                     ? new TryResult<R>(res.Exception)
                     : e));
 
         public static TryAsync<T> Regardless<T>(this TryAsync<T> self, TryAsync<UnitValue> binder) => async () =>
-            await Map(await self.TryAsync(), res =>
-                binder.Match(r => res, e => res.IsFailure
+            await Map(await self.TryAsync(), async res =>
+                await binder.Match(r => res, e => res.IsFailure
                     ? res.Exception
                     : e));
 

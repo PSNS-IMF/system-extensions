@@ -1,7 +1,4 @@
-﻿using Psns.Common.Functional;
-using static Psns.Common.Functional.Prelude;
-
-namespace Psns.Common.SystemExtensions.Functional
+﻿namespace Psns.Common.Functional
 {
     public static partial class Prelude
     {
