@@ -43,24 +43,16 @@ namespace Psns.Common.SystemExtensions
                     await Map(cancelToken | CancellationToken.None, async token =>
                         await Task.Factory.StartNew(() =>
                         {
-                            var childTasks = self.Aggregate(
-                                new List<Task>(),
-                                (state, item) =>
+                            self.Iter(item =>
+                                Task.Factory.StartNew(() =>
                                 {
-                                    state.Add(Task.Factory.StartNew(() =>
-                                      {
-                                          action(item);
+                                    action(item);
 
-                                          token.ThrowIfCancellationRequested();
-                                      },
-                                      token,
-                                      TaskCreationOptions.AttachedToParent,
-                                      chosenScheduler));
-
-                                    return state;
-                                });
-
-                            Task.WaitAll(childTasks.ToArray());
+                                    token.ThrowIfCancellationRequested();
+                                },
+                                token,
+                                TaskCreationOptions.AttachedToParent,
+                                chosenScheduler));
 
                             token.ThrowIfCancellationRequested();
 

@@ -74,9 +74,9 @@ namespace Psns.Common.SystemExtensions.Database
         /// <typeparam name="T"></typeparam>
         /// <returns><see cref="Functional.Try{T}"/></returns>
         public static Func<Func<IDbCommand, T>, IDbTransaction, Try<T>> CreateCommand<T>() =>
-            (func, transaction) =>
+            (func, transaction) => () =>
                 Try(() => transaction.Connection.CreateCommand().Tap(cmd => cmd.Transaction = transaction))
-                    .Bind(cmd => Try(() => Use(cmd, func)));
+                    .Bind(cmd => Try(() => Use(cmd, func))).Try();
 
         /// <summary>
         /// Creates a function that tries to: 
@@ -88,9 +88,9 @@ namespace Psns.Common.SystemExtensions.Database
         /// <typeparam name="T"></typeparam>
         /// <returns><see cref="Functional.TryAsync{T}"/></returns>
         public static Func<Func<IDbCommand, Task<T>>, IDbTransaction, TryAsync<T>> CreateCommandAsync<T>() =>
-            (func, transaction) =>
+            (func, transaction) => () =>
                 Try(() => transaction.Connection.CreateCommand().Tap(cmd => cmd.Transaction = transaction))
-                    .Bind(cmd => TryAsync(() => Use(cmd, func)));
+                    .Bind(cmd => TryAsync(() => Use(cmd, func))).TryAsync();
 
         /// <summary>
         /// Create a meaningful <see cref="string"/> representation of an <see cref="IDbCommand"/>.

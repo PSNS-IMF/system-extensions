@@ -153,5 +153,8 @@ namespace Psns.Common.Functional
         public static Func<T1, R> fun<T1, R>(Func<T1, R> f) => f;
 
         public static Func<T1, T2, R> fun<T1, T2, R>(Func<T1, T2, R> f) => f;
+
+        public static IEnumerable<T> Cons<T>(params T[] items) =>
+            items;
     }
 }
