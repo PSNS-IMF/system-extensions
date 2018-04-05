@@ -65,7 +65,7 @@ namespace Psns.Common.SystemExtensions
         public static TryAsync<UnitValue> TryIterAsync<T>(this IEnumerable<T> self, 
             Action<T> action,
             Maybe<CancellationToken> cancelToken,
-            Maybe<TaskScheduler> scheduler) =>
-                TryAsync(() => self.IterAsync(action, cancelToken, scheduler));
+            Maybe<TaskScheduler> scheduler) => () =>
+                TryAsync(() => self.IterAsync(action, cancelToken, scheduler)).TryAsync();
     }
 }

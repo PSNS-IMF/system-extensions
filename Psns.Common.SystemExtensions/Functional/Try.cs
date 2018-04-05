@@ -95,9 +95,9 @@ namespace Psns.Common.Functional
         ///         otherwise, binder's exception.</returns>
         public static Try<R> Regardless<T, R>(this Try<T> self, Try<R> binder) => () =>
             Map(self.Try(), res =>
-                binder.Match(r => r, e => res.IsFailure
-                    ? new TryResult<R>(res.Exception)
-                    : e));
+                Map(binder(), r => r.IsFailure
+                    ? new TryResult<R>(r.Exception)
+                    : res.IsFailure ? new TryResult<R>(res.Exception) : r));
 
         public static TryAsync<R> Bind<T, R>(this Try<T> self, Func<T, TryAsync<R>> binder) => async () =>
             await Map(self.Try(), async res => res.IsFailure
@@ -106,9 +106,9 @@ namespace Psns.Common.Functional
 
         public static Try<T> Regardless<T>(this Try<T> self, Try<UnitValue> binder) => () =>
             Map(self.Try(), res =>
-                binder.Match(r => res, e => res.IsFailure
-                    ? res.Exception
-                    : e));
+                Map(binder(), r => r.IsFailure 
+                    ? new TryResult<T>(r.Exception)
+                    : res));
 
         public static Try<R> BindIf<T, R>(
             this Try<T> self,
@@ -148,15 +148,15 @@ namespace Psns.Common.Functional
 
         public static TryAsync<R> Regardless<T, R>(this TryAsync<T> self, TryAsync<R> binder) => async () =>
             await Map(await self.TryAsync(), async res =>
-                await binder.Match(r => r, e => res.IsFailure
-                    ? new TryResult<R>(res.Exception)
-                    : e));
+                Map(await binder.TryAsync(), r => r.IsFailure
+                    ? new TryResult<R>(r.Exception)
+                    : res.IsFailure ? new TryResult<R>(res.Exception) : r));
 
         public static TryAsync<T> Regardless<T>(this TryAsync<T> self, TryAsync<UnitValue> binder) => async () =>
-            await Map(await self.TryAsync(), async res =>
-                await binder.Match(r => res, e => res.IsFailure
-                    ? res.Exception
-                    : e));
+            await Map(await self.TryAsync(), async res => 
+                Map(await binder.TryAsync(), r => r.IsFailure 
+                    ? new TryResult<T>(r.Exception) 
+                    : res));
 
         public static TryAsync<R> BindIf<T, R>(
             this TryAsync<T> self,

@@ -61,6 +61,7 @@
     <Compile Include="CreateCommandTests.fs" />
     <Compile Include="BeginTransactionTests.fs" />
     <Compile Include="IEnumerableTests.fs" />
+    <Compile Include="TryTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">
