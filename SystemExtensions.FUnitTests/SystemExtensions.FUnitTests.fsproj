@@ -60,6 +60,7 @@
     <Content Include="App.config" />
     <Compile Include="CreateCommandTests.fs" />
     <Compile Include="BeginTransactionTests.fs" />
+    <Compile Include="IEnumerableTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">

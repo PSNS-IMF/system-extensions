@@ -35,29 +35,45 @@ namespace Psns.Common.SystemExtensions
             return Unit;
         }
 
-        public static async Task<UnitValue> IterAsync<T>(this IEnumerable<T> self, Action<T> action, CancellationToken? cancelToken = null) =>
-            await Map(cancelToken ?? CancellationToken.None, async token =>
-                await Task.Run(async () =>
-                {
-                    foreach (var item in self)
-                    {
+        public static async Task<UnitValue> IterAsync<T>(this IEnumerable<T> self, 
+            Action<T> action, 
+            Maybe<CancellationToken> cancelToken, 
+            Maybe<TaskScheduler> scheduler) =>
+                await Map(scheduler | TaskScheduler.Current, async chosenScheduler =>
+                    await Map(cancelToken | CancellationToken.None, async token =>
                         await Task.Factory.StartNew(() =>
                         {
-                            action(item);
+                            var childTasks = self.Aggregate(
+                                new List<Task>(),
+                                (state, item) =>
+                                {
+                                    state.Add(Task.Factory.StartNew(() =>
+                                      {
+                                          action(item);
+
+                                          token.ThrowIfCancellationRequested();
+                                      },
+                                      token,
+                                      TaskCreationOptions.AttachedToParent,
+                                      chosenScheduler));
+
+                                    return state;
+                                });
+
+                            Task.WaitAll(childTasks.ToArray());
 
                             token.ThrowIfCancellationRequested();
+
+                            return Unit;
                         },
-                            token,
-                            TaskCreationOptions.AttachedToParent,
-                            TaskScheduler.Current);
-                    }
+                        token,
+                        TaskCreationOptions.None,
+                        chosenScheduler)));
 
-                    token.ThrowIfCancellationRequested();
-
-                    return Unit;
-                }, token));
-
-        public static TryAsync<UnitValue> TryIterAsync<T>(this IEnumerable<T> self, Action<T> action, CancellationToken? cancelToken = null) =>
-            TryAsync(() => self.IterAsync(action, cancelToken));
+        public static TryAsync<UnitValue> TryIterAsync<T>(this IEnumerable<T> self, 
+            Action<T> action,
+            Maybe<CancellationToken> cancelToken,
+            Maybe<TaskScheduler> scheduler) =>
+                TryAsync(() => self.IterAsync(action, cancelToken, scheduler));
     }
 }
