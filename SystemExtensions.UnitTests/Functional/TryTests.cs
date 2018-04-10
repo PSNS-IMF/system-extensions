@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Psns.Common.Functional;
+using Psns.Common.SystemExtensions;
 using System;
 using System.Threading.Tasks;
 using static NUnit.StaticExpect.Expectations;
@@ -104,18 +105,55 @@ namespace SystemExtensions.UnitTests.Functional
                 EqualTo(FailVal));
 
         [Test]
+        public void TryUse_CallsDispose()
+        {
+            var disposable = new Disposable();
+            var user = fun((Disposable d) => { Expect(d.Disposed, False); return "ok"; });
+
+            var result = TryUse(() => disposable, user).Match(s => s, ex => "fail");
+
+            Expect(result, EqualTo("ok"));
+            Expect(disposable.Disposed, True);
+        }
+
+        [Test]
+        public void TryUse_Fails_FailureReturned()
+        {
+            var disposable = new Disposable();
+            var user = fun((Disposable d) => { Expect(d.Disposed, False); return OkVal; });
+
+            var result = TryUse(() => fail<Disposable>(), user).Match(s => s, ex => FailVal);
+
+            Expect(result, EqualTo(FailVal));
+        }
+
+        [Test]
         public async Task TryUse_DoesNotCallDisposeBeforeTaskFinishes()
         {
             var disposable = new Disposable();
-            var user = fun((Disposable d) => TryAsync(async () =>
-            {
-                await Task.Delay(500);
-                Expect(d.Disposed, False);
-            }));
+            var attempt = TryUse(() => disposable, v => withDelay(v, _ => Expect(v.Disposed, False)));
 
-            var t = TryUse(() => disposable, user);
+            var result = await attempt.Match(
+                u => 
+                    "ok", 
+                e => 
+                    "fail");
 
-            var result = await t.Match(u => "ok", e => "fail");
+            Expect(result, EqualTo("ok"));
+            Expect(disposable.Disposed, True);
+        }
+
+        [Test]
+        public async Task TryUseTask_DoesNotCallDisposeBeforeTaskFinishes()
+        {
+            var disposable = new Disposable();
+            var attempt = TryUse(() => disposable, v => withDelay(v, _ => Expect(v.Disposed, False)));
+
+            var result = await attempt.Match(
+                u =>
+                    "ok",
+                e =>
+                    "fail");
 
             Expect(result, EqualTo("ok"));
             Expect(disposable.Disposed, True);
@@ -155,14 +193,23 @@ namespace SystemExtensions.UnitTests.Functional
         public const string EitherVal = "either";
 
         public static Try<string> failingTry => () =>
-            {
-                throw new Exception(FailVal);
-            };
+            fail<string>();
 
         public static Func<Task, string> failingTask => task =>
+            fail<string>();
+
+        public static async Task<T> withDelay<T>(T val, params Action<T>[] actions) =>
+            await Map(val, async _ =>
             {
-                throw new Exception(FailVal);
-            };
+                await Task.Delay(500);
+
+                actions.Iter(a => a(val));
+
+                return val;
+            });
+
+        public static T fail<T>() => 
+            throw new Exception(FailVal);
 
         public static string doTry(Try<string> self) =>
             self.Match(val => val, _ => FailVal);

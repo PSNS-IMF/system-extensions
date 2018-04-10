@@ -17,8 +17,8 @@ namespace Psns.Common.SystemExtensions.Database
         /// <typeparam name="T"></typeparam>
         /// <returns><see cref="Functional.Try{T}"/></returns>
         public static Func<Func<IDbConnection, Try<T>>, Func<IDbConnection>, Try<T>> Connect<T>() =>
-            (func, factory) => 
-                Use(factory, func);
+            (func, factory) => () =>
+                Use(factory, conn => func(conn).Try());
 
         /// <summary>
         /// Creates a function that tries to: 

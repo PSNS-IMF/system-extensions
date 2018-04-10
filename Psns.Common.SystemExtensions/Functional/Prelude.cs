@@ -79,54 +79,55 @@ namespace Psns.Common.Functional
                 ? Some(map(value))
                 : Maybe<R>.None;
 
-        public static R Use<T, R>(T disposable, Func<T, R> user) where T : IDisposable
-        {
-            using (disposable)
-            {
-                return user(disposable);
-            }
-        }
+        public static R Use<T, R>(T disposable, Func<T, R> user) where T : IDisposable =>
+            Use(() => disposable, user);
 
         public static R Use<T, R>(Func<T> factory, Func<T, R> user) where T : IDisposable
         {
-            using (var disposable = factory())
+            var disposable = factory();
+
+            try
             {
-                return user(disposable);
+                var result = user(disposable);
+                return result;
+            }
+            finally
+            {
+                disposable.Dispose();
             }
         }
 
-        public static async Task<R> UseAsync<T, R>(T disposable, Func<T, Task<R>> user) where T : IDisposable
-        {
-            using (disposable)
-            {
-                return await user(disposable);
-            }
-        }
+        public static async Task<R> UseAsync<T, R>(T disposable, Func<T, Task<R>> user) where T : IDisposable =>
+            await UseAsync(() => disposable, user);
 
         public static async Task<R> UseAsync<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable
         {
-            using (var disposable = factory())
+            var disposable = factory();
+
+            try
             {
                 return await user(disposable);
+            }
+            finally
+            {
+                disposable.Dispose();
             }
         }
 
         public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, R> user) where T : IDisposable =>
-            Try(() => Use(factory(), user));
+            Try(factory).Bind(val => Use(val, user));
 
-        public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, Try<R>> user) where T : IDisposable => () =>
-            Try(() => Use(factory, user))
-                .Match(t => t.Try(), e => new TryResult<R>(e));
+        public static Try<R> TryUse<T, R>(Func<T> factory, Func<T, Try<R>> user) where T : IDisposable =>
+            Try(factory).Bind(val => Use(val, _ => user(val).Try()));
 
-        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable => async () =>
-            await TryAsync(() => UseAsync(factory(), user))
-                .Match(t => t, e => new TryResult<R>(e));
+        public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, Task<R>> user) where T : IDisposable =>
+            Try(factory)
+                .Bind(val => TryAsync(() => UseAsync(val, user)));
 
         public static TryAsync<R> TryUse<T, R>(Func<T> factory, Func<T, TryAsync<R>> user) where T : IDisposable => async () =>
-            await TryAsync(() => UseAsync(factory, f => user(f).TryAsync()))
-                .Match(
-                    t => t,
-                    e => new TryResult<R>(e));
+            await Try(factory)
+                .Bind(async val => await UseAsync(val, v => user(v).TryAsync()))
+                .Match(task => task, ex => new TryResult<R>(ex).AsTask());
 
         /// <summary>
         /// Checks for null value

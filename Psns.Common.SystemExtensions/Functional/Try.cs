@@ -82,6 +82,11 @@ namespace Psns.Common.Functional
                 ? res.Exception
                 : Prelude.Try(() => binder(res.Value)).Try());
 
+        public static Try<R> Bind<T, R>(this Try<T> self, Func<T, TryResult<R>> binder) => () =>
+            Map(self.Try(), res => res.IsFailure
+                ? res.Exception
+                : binder(res.Value));
+
         /// <summary>
         /// Executes binder function even if self fails.
         /// </summary>
