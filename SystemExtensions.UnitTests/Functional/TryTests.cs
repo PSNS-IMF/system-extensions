@@ -208,8 +208,10 @@ namespace SystemExtensions.UnitTests.Functional
                 return val;
             });
 
-        public static T fail<T>() => 
+        public static T fail<T>()
+        {
             throw new Exception(FailVal);
+        }
 
         public static string doTry(Try<string> self) =>
             self.Match(val => val, _ => FailVal);
