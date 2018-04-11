@@ -9,5 +9,7 @@
     public struct UnitValue
     {
         public static readonly UnitValue Default = new UnitValue();
+
+        public override string ToString() => "()";
     }
 }

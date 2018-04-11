@@ -3,9 +3,11 @@
 open System
 open System.Data
 open Psns.Common.Functional
+open Psns.Common.SystemExtensions.Database
 open Foq
 open NUnit.Framework
 open FsUnit
+open System.Data.SqlClient
 
 type ext = Psns.Common.Functional.Prelude
 type db = Psns.Common.SystemExtensions.Database.Prelude
@@ -53,3 +55,16 @@ let ``it should return error text if given function throws.`` () =
     verify <@ connection.CreateCommand() @> once
     verify <@ command.Transaction <- transaction @> once
     verify <@ command.Dispose() @> once
+
+[<Test>]
+let ``it should return a string representation of a command.`` () =
+    let command = new SqlCommand("select")
+    command.Parameters.Add(new SqlParameter("p1", "value")) |> ignore
+
+    command.ToLogString(ext.Some("caller")) |> should contain "caller -> {Params: [Name: p1 Value: value]}, {Text: select}, {Connection State:"
+
+[<Test>]
+let ``it should return a string representation of a command with null params.`` () =
+    let command = new SqlCommand("select")
+
+    command.ToLogString(ext.Some("caller")) |> should contain "caller -> {Params: []}, {Text: select}, {Connection State:"

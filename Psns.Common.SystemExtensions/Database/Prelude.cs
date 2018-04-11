@@ -1,6 +1,7 @@
 ﻿using Psns.Common.Functional;
 using System;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using static Psns.Common.Functional.Prelude;
 
@@ -99,8 +100,21 @@ namespace Psns.Common.SystemExtensions.Database
         /// <param name="callerName"></param>
         /// <returns><see cref="string"/></returns>
         public static string ToLogString(this IDbCommand self, Maybe<string> callerName) =>
-            $@"{callerName} -> Param Count: {self?.Parameters?.Count.ToString() ?? "Null"} Connection State: {
-                self?.Connection?.State.ToString() ?? "Null"} Transaction Isolation Level: {
-                self?.Transaction?.IsolationLevel.ToString() ?? "Null"}";
+            $@"{callerName} -> {{Params: [{self.Params()}]}}, {{Text: {self.CommandText}}}, {{Connection State: {
+                self?.Connection?.State.ToString() ?? "Null"}}}, Transaction Isolation Level: {{{
+                self?.Transaction?.IsolationLevel.ToString() ?? "Null"}}}";
+
+        /// <summary>
+        /// Gets a string representation of <see cref="IDbCommand"/>'s parameters.
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public static string Params(this IDbCommand command) =>
+            Map(Possible(command.Parameters), mParams => mParams.Match(
+                some: prams => 
+                    string.Join(", ", prams.OfType<IDataParameter>().Aggregate(
+                        string.Empty,
+                        (prev, next) => prev += $"Name: {next.ParameterName} Value: {next.Value}")),
+                none: () => None.ToString()));
     }
 }
