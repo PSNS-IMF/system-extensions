@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static Psns.Common.Functional.Prelude;
 
 namespace Psns.Common.Functional
@@ -24,6 +25,9 @@ namespace Psns.Common.Functional
             value == null
                 || (Nullable.GetUnderlyingType(typeof(T)) != null && value.Equals(default(T)));
 
+        public static bool IsDefault<T>(T value) =>
+            EqualityComparer<T>.Default.Equals(value, default(T));
+
         public static UnitValue Match<T>(this Maybe<T> self, Action<T> some, Action none) =>
             self.Match(t => { some(t); return Unit; }, () => { none(); return Unit; });
     }
@@ -32,7 +36,7 @@ namespace Psns.Common.Functional
     {
         readonly T _value;
 
-        public bool IsNone => IsNull(_value);
+        public bool IsNone => IsNull(_value) || IsDefault(_value);
         public bool IsSome => !IsNone;
 
         Maybe(T t)

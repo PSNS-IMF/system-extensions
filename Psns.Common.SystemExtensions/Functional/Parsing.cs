@@ -7,7 +7,7 @@
             int parsed;
             return int.TryParse(value, out parsed)
                 ? Some(parsed)
-                : Maybe<int>.None;
+                : None;
         }
     }
 }
