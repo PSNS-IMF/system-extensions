@@ -112,9 +112,11 @@ namespace Psns.Common.SystemExtensions.Database
         public static string Params(this IDbCommand command) =>
             Map(Possible(command.Parameters), mParams => mParams.Match(
                 some: prams => 
-                    string.Join(", ", prams.OfType<IDataParameter>().Aggregate(
+                    string.Join(", ", prams.OfType<object>().Aggregate(
                         string.Empty,
-                        (prev, next) => prev += $"Name: {next.ParameterName} Value: {next.Value}")),
+                        (prev, next) => Map(Possible((IDataParameter)next), posParam => posParam.Match(
+                            some: param => prev += $"Name: {param.ParameterName} Value: {param.Value}",
+                            none: () => prev += $"Could not parse Parameter of Type: {next.GetType()}")))),
                 none: () => None.ToString()));
     }
 }
