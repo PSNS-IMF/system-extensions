@@ -110,13 +110,15 @@ namespace Psns.Common.SystemExtensions.Database
         /// <param name="command"></param>
         /// <returns></returns>
         public static string Params(this IDbCommand command) =>
-            Map(Possible(command.Parameters), mParams => mParams.Match(
+            Possible(command.Parameters).Match(
                 some: prams => 
-                    string.Join(", ", prams.OfType<object>().Aggregate(
-                        string.Empty,
-                        (prev, next) => Map(Possible((IDataParameter)next), posParam => posParam.Match(
-                            some: param => prev += $"Name: {param.ParameterName} Value: {param.Value}",
-                            none: () => prev += $"Could not parse Parameter of Type: {next.GetType()}")))),
-                none: () => None.ToString()));
+                    string.Join(", ", Possible(prams.OfType<object>()).Match(
+                        some: objects => objects.Aggregate(
+                            string.Empty,
+                            (prev, next) => Map(Possible((IDataParameter)next), posParam => posParam.Match(
+                                some: param => prev += $"Name: {param.ParameterName} Value: {param.Value}",
+                                none: () => prev += $"Could not parse Parameter of Type: {next.GetType()}"))),
+                        none: () => string.Empty)),
+                none: () => None.ToString());
     }
 }
