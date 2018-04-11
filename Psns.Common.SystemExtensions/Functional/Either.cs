@@ -1,6 +1,7 @@
 ﻿using Psns.Common.SystemExtensions.Diagnostics;
 using System;
 using System.Diagnostics;
+using static Psns.Common.SystemExtensions.Diagnostics.Prelude;
 
 namespace Psns.Common.Functional
 {
@@ -37,10 +38,10 @@ namespace Psns.Common.Functional
                 r => Right<LRet, R>(r),
                 l => mLog.Match(log => log.Benchmark(() => binder(l), description, None), () => binder(l)));
 
-        public static Either<L, R> Log<L, R>(this Either<L, R> self, Maybe<Log> mLog, Func<R, string> message, TraceEventType type = TraceEventType.Information) =>
+        public static Either<L, R> Log<L, R>(this Either<L, R> self, Maybe<Log> mLog, Func<R, string> message, string category = GeneralLogCategory, TraceEventType type = DefaultLogEventType) =>
             self.Match(
                 r => mLog.Match(
-                    log => log.Info(r, message(r)),
+                    log => log.Log(r, message(r), category, type),
                     () => Right<L, R>(r)),
                 l => Left<L, R>(l));
     }
