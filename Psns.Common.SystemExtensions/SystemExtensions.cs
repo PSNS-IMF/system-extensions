@@ -35,7 +35,7 @@ namespace Psns.Common.SystemExtensions
                 {
                     try
                     {
-                        hasHandle = mutex.WaitOne(waitTimeout, false);
+                        hasHandle = mutex.WaitOne(waitTimeout);
                     }
                     catch(AbandonedMutexException e)
                     {

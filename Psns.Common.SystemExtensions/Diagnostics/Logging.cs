@@ -30,6 +30,13 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public const string GeneralLogCategory = "General";
         public const TraceEventType DefaultLogEventType = TraceEventType.Information;
 
+        public static Log WithThrottling(this Log self) => new Log((msg, cat, eType) =>
+        {
+            // throttle
+
+            self(msg, cat, eType);
+        });
+
         #region Benchmark
 
         public static T Benchmark<T>(this Log self, T val, Action<T> func, string description = "") =>

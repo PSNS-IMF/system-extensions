@@ -1,8 +1,7 @@
-<?xml version="1.0"?>
-<package >
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Psns.Common.SystemExtensions</id>
-    <title>Psns.Common.SystemExtensions</title>
     <authors>PSNS</authors>
     <owners>109.14</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -10,6 +9,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.0
+      ### Features
+      * Switched to NetStandard in order to support all platforms
+
       ## 1.0.0.5
       ### Features
       * Fixed issue with TryUse disposing of target before Task finishes.
@@ -36,8 +39,19 @@
     </releaseNotes>
     <version>$version$</version>
     <tags>PSNS</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="Psns.Common.Functional" version="2018.4.26.5" exclude="Build,Analyzers" />
+        <dependency id="System.Data.SqlClient" version="4.4.3" exclude="Build,Analyzers" />
+        <dependency id="System.Diagnostics.Process" version="4.3.0" exclude="Build,Analyzers" />
+        <dependency id="System.Diagnostics.TraceSource" version="4.3.0" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Thread" version="4.3.0" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.ThreadPool" version="4.3.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
   </metadata>
   <files>
-    <file src="Psns.Common.SystemExtensions\bin\$configuration$\Psns.Common.SystemExtensions.*" target="lib\net45\" exclude="**\*.dll.config;**\*Tests*;**\*Test*" />
+    <file src="Psns.Common.SystemExtensions\bin\$configuration$\netstandard1.3\Psns.Common.SystemExtensions.*" target="lib\netstandard1.3" exclude="**\*.dll.config;**\*Tests*;**\*Test*;**\*.deps.json" />
   </files>
 </package>

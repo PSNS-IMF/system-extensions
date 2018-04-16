@@ -43,7 +43,7 @@ namespace Psns.Common.SystemExtensions
 
             if (sqlException != null)
             {
-                builder.Append($@"ErrorCode: {sqlException.ErrorCode}, Number: {sqlException.Number}, ");
+                builder.Append($@"Number: {sqlException.Number}, ");
 
                 var errors = new SqlError[sqlException.Errors.Count];
                 sqlException.Errors.CopyTo(errors, 0);
