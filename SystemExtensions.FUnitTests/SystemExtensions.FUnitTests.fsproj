@@ -63,6 +63,8 @@
     <Compile Include="IEnumerableTests.fs" />
     <Compile Include="TryTests.fs" />
     <Compile Include="ParsingTests.fs" />
+    <Compile Include="MatchingTests.fs" />
+    <Compile Include="EitherTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">

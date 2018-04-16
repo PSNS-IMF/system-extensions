@@ -8,15 +8,8 @@ namespace Psns.Common.Functional
     {
         public static Maybe<T> Possible<T>(T t) => t;
 
-        public static Maybe<T> Some<T>(T t)
-        {
-            if (IsNull(t))
-            {
-                throw new ArgumentNullException($"{nameof(t)} cannot be null");
-            }
-
-            return t;
-        }
+        public static Maybe<T> Some<T>(T t) =>
+            Maybe<T>.Some(t);
 
         public static MaybeNone None =>
             MaybeNone.Default;
@@ -36,12 +29,16 @@ namespace Psns.Common.Functional
     {
         readonly T _value;
 
-        public bool IsNone => IsNull(_value) || IsDefault(_value);
-        public bool IsSome => !IsNone;
+        public bool IsNone => !IsSome;
+        public readonly bool IsSome;
 
         Maybe(T t)
         {
+            if (IsNull(t))
+                throw new ArgumentNullException($"{nameof(t)} cannot be null");
+
             _value = t;
+            IsSome = true;
         }
 
         public static Maybe<T> Some(T value) =>
@@ -73,7 +70,9 @@ namespace Psns.Common.Functional
                 : some(_value);
 
         public static implicit operator Maybe<T>(T t) =>
-            new Maybe<T>(t);
+            IsNull(t)
+                ? None
+                : Some(t);
 
         public static implicit operator Maybe<T>(MaybeNone none) =>
             None;
@@ -88,7 +87,7 @@ namespace Psns.Common.Functional
         public static T operator |(Maybe<T> a, T b) =>
             a.IsSome
                 ? a._value
-                : b.AssertValue();
+                : b;
 
         public override bool Equals(object obj)
         {

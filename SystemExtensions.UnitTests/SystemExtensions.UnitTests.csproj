@@ -67,6 +67,7 @@
     <Compile Include="Functional\EitherTests.cs" />
     <Compile Include="Functional\MaybeTests.cs" />
     <Compile Include="DatabaseTests.cs" />
+    <Compile Include="Functional\MatchingTests.cs" />
     <Compile Include="Functional\TryTests.cs" />
     <Compile Include="ProcessStateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

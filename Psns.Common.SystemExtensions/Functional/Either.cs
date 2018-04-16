@@ -1,5 +1,6 @@
 ﻿using Psns.Common.SystemExtensions.Diagnostics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using static Psns.Common.SystemExtensions.Diagnostics.Prelude;
 
@@ -44,6 +45,32 @@ namespace Psns.Common.Functional
                     log => log.Log(r, message(r), category, type),
                     () => Right<L, R>(r)),
                 l => Left<L, R>(l));
+
+        public static IEnumerable<R> Rights<L, R>(this IEnumerable<Either<L, R>> self)
+        {
+            foreach (var either in self)
+            {
+                if (either.IsRight)
+                {
+                    yield return either.Match(
+                        right: r => r,
+                        left: l => default(R));
+                }
+            }
+        }
+
+        public static IEnumerable<L> Lefts<L, R>(this IEnumerable<Either<L, R>> self)
+        {
+            foreach(var either in self)
+            {
+                if (either.IsLeft)
+                {
+                    yield return either.Match(
+                        right: r => default(L),
+                        left: l => l);
+                }
+            }
+        }
     }
 
     public struct Either<L, R>
@@ -59,9 +86,9 @@ namespace Psns.Common.Functional
         readonly R _right;
         readonly EitherState _state;
 
-        bool IsLeft =>  _state == EitherState.Left;
-        bool IsRight => _state == EitherState.Right;
-        bool IsNone =>  _state == EitherState.None;
+        public bool IsLeft =>  _state == EitherState.Left;
+        public bool IsRight => _state == EitherState.Right;
+        public bool IsNone =>  _state == EitherState.None;
 
         Either(L left)
         {
@@ -106,6 +133,13 @@ namespace Psns.Common.Functional
                 : IsLeft
                     ? binder(_left)
                     : Right<Left, R>(_right);
+
+        public Either<L, Ret> Map<Ret>(Func<R, Ret> mapper) =>
+            IsNone
+                ? Either<L, Ret>.None
+                : IsLeft
+                    ? Left<L, Ret>(_left)
+                    : mapper(_right);
 
         public Either<L, R> Append(Either<L, R> other) =>
             IsNone
