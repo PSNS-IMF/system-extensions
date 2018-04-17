@@ -12,8 +12,8 @@ namespace Psns.Common.Functional
         public static List<T> Cons<T>(params T[] items) =>
             new List<T>(items);
 
-        public static Tuple<T1, T2> Cons<T1, T2>(T1 t1, T2 t2) =>
-            Tuple.Create(t1, t2);
+        public static Tuple<T1, T2> Tuple<T1, T2>(T1 t1, T2 t2) =>
+            System.Tuple.Create(t1, t2);
 
         public static Task<T> AsTask<T>(this T t) =>
             Task.FromResult(t);
