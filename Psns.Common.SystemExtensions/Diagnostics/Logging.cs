@@ -1,4 +1,5 @@
-﻿using Psns.Common.Functional;
+﻿using Psns.Common.Analysis;
+using Psns.Common.Functional;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -32,12 +33,31 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public const string GeneralLogCategory = "General";
         public const TraceEventType DefaultLogEventType = TraceEventType.Information;
 
-        public static Log WithThrottling(this Log self) => new Log((msg, cat, eType) =>
-        {
-            // throttle
+        public static Log UseErrorThrottling(
+            this Log self,
+            Func<Tuple<Delta, double>> getDelta,
+            Func<Tuple<Delta, double>, Boundary<double>> mapRate,
+            Func<Boundary<double>, double, Anomaly.Classification> classify) =>
+                new Log((msg, cat, eType) =>
+                {
+                    var delta = getDelta();
+                    var rate = mapRate(delta);
+                    var classification = classify(rate, delta.Item2);
 
-            self(msg, cat, eType);
-        });
+                    var shouldLog = eType == TraceEventType.Error
+                        ? classification.IsNorm
+                            ? true
+                            : false
+                        : true;
+
+                    if (shouldLog)
+                        self(msg, cat, eType);
+                    else
+                        self(
+                            $"Not logging: Delta: {delta}, Rate: {rate}, Classification: {classification}",
+                            cat,
+                            TraceEventType.Verbose);
+                });
 
         #region Benchmark
 

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Psns.Common.Analysis" Version="2018.4.30.4" />
     <PackageReference Include="Psns.Common.Functional" Version="2018.4.26.5" />
   </ItemGroup>
 

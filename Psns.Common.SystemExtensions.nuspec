@@ -50,6 +50,7 @@
       </group>
       <group>
         <dependency id="Psns.Common.Functional" version="2018.4.26.5" exclude="Build,Analyzers" />
+        <dependency id="Psns.Common.Analysis" version="2018.4.30.4" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
