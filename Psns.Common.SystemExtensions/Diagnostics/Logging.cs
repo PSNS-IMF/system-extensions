@@ -25,6 +25,8 @@ namespace Psns.Common.SystemExtensions.Diagnostics
     /// <returns><see cref="string"/> to be logged</returns>
     public delegate string FormatBenchmarkStats(int currentThreadId, TimeSpan runtime, long currentProcessMemoryUsage, string description);
 
+    #pragma warning disable 1591
+
     public static partial class Prelude
     {
         public const string GeneralLogCategory = "General";
@@ -218,4 +220,6 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             TraceEventType type = DefaultLogEventType) =>
                 val.Tap(_ => self(func(val), category, type));
     }
+    
+    #pragma warning restore 1591
 }

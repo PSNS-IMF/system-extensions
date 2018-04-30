@@ -40,18 +40,20 @@
     <version>$version$</version>
     <tags>PSNS</tags>
     <dependencies>
-      <group targetFramework=".NETStandard1.3">
-        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
-        <dependency id="Psns.Common.Functional" version="2018.4.26.5" exclude="Build,Analyzers" />
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="NETStandard.Library" version="2.0.2" exclude="Build,Analyzers" />
         <dependency id="System.Data.SqlClient" version="4.4.3" exclude="Build,Analyzers" />
         <dependency id="System.Diagnostics.Process" version="4.3.0" exclude="Build,Analyzers" />
         <dependency id="System.Diagnostics.TraceSource" version="4.3.0" exclude="Build,Analyzers" />
         <dependency id="System.Threading.Thread" version="4.3.0" exclude="Build,Analyzers" />
         <dependency id="System.Threading.ThreadPool" version="4.3.0" exclude="Build,Analyzers" />
       </group>
+      <group>
+        <dependency id="Psns.Common.Functional" version="2018.4.26.5" exclude="Build,Analyzers" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Psns.Common.SystemExtensions\bin\$configuration$\netstandard1.3\Psns.Common.SystemExtensions.*" target="lib\netstandard1.3" exclude="**\*.dll.config;**\*Tests*;**\*Test*;**\*.deps.json" />
+    <file src="Psns.Common.SystemExtensions\bin\$configuration$\**\Psns.Common.SystemExtensions.*" target="lib\" exclude="**\*.dll.config;**\*Tests*;**\*Test*;**\*.deps.json" />
   </files>
 </package>
