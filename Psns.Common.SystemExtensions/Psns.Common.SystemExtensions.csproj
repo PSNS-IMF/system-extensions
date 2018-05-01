@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net451;net46;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net45;net451;net452;net46;netstandard1.6</TargetFrameworks>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <Choose>
-    <When Condition="'$(TargetFramework)'=='net45' Or '$(TargetFramework)'=='net451' Or '$(TargetFramework)'=='net46'">
+    <When Condition="'$(TargetFramework)'=='net45' Or '$(TargetFramework)'=='net451' Or '$(TargetFramework)'=='net452' Or '$(TargetFramework)'=='net46'">
       <ItemGroup></ItemGroup>
     </When>
     <Otherwise>
