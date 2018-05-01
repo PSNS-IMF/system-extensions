@@ -33,16 +33,21 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public const string GeneralLogCategory = "General";
         public const TraceEventType DefaultLogEventType = TraceEventType.Information;
 
-        public static Log UseErrorThrottling(
+        /// <summary>
+        /// Creates a <see cref="Diagnostics.Log"/> that only writes to log if 
+        /// error type is not <see cref="TraceEventType.Error"/> 
+        /// or <paramref name="classify"/> returns <see cref="Anomaly.Classification.Norm"/>.
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="classify">A classifying function</param>
+        /// <returns></returns>
+        /// <remarks>Logs an entry of type <see cref="TraceEventType.Verbose"/> if not logging.</remarks>
+        public static Log UseErrorClassification(
             this Log self,
-            Func<Tuple<Delta, double>> getDelta,
-            Func<Tuple<Delta, double>, Boundary<double>> mapRate,
-            Func<Boundary<double>, double, Anomaly.Classification> classify) =>
+            Func<Anomaly.Classification> classify) =>
                 new Log((msg, cat, eType) =>
                 {
-                    var delta = getDelta();
-                    var rate = mapRate(delta);
-                    var classification = classify(rate, delta.Item2);
+                    var classification = classify();
 
                     var shouldLog = eType == TraceEventType.Error
                         ? classification.IsNorm
@@ -54,7 +59,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
                         self(msg, cat, eType);
                     else
                         self(
-                            $"Not logging: Delta: {delta}, Rate: {rate}, Classification: {classification}",
+                            $"Not logging: Classification: {classification}",
                             cat,
                             TraceEventType.Verbose);
                 });
