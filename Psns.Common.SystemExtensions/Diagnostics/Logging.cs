@@ -1,5 +1,4 @@
-﻿using Psns.Common.Analysis;
-using Psns.Common.Functional;
+﻿using Psns.Common.Functional;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -34,35 +33,31 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public const TraceEventType DefaultLogEventType = TraceEventType.Information;
 
         /// <summary>
-        /// Creates a <see cref="Diagnostics.Log"/> that only writes to log if 
-        /// error type is not <see cref="TraceEventType.Error"/> 
-        /// or <paramref name="classify"/> returns <see cref="Anomaly.Classification.Norm"/>.
+        /// Enables throttling of Error logging based on the rate of incoming Errors.
+        /// Only Errors are throttled and are only logged if the current <see cref="ErrorLoggingState"/>
+        /// is <c>Normal</c>.
         /// </summary>
         /// <param name="self"></param>
-        /// <param name="classify">A classifying function</param>
+        /// <param name="stateMachine">A function that determines the current <see cref="ErrorLoggingState"/></param>
         /// <returns></returns>
-        /// <remarks>Logs an entry of type <see cref="TraceEventType.Verbose"/> if not logging.</remarks>
-        public static Log UseErrorClassification(
-            this Log self,
-            Func<Anomaly.Classification> classify) =>
-                new Log((msg, cat, eType) =>
-                {
-                    var classification = classify();
+        public static Log WithThrottling(this Log self, Func<ErrorLoggingState> stateMachine) =>
+            new Log((msg, cat, eType) =>
+            {
+                var logStatus = fun((ErrorLoggingState s) =>
+                    s.Tap(
+                    _ => self(s.ToString(), ErrorLoggingStateModule.LogCategory, TraceEventType.Verbose),
+                    _ => { if (s.IsSaturating) { self($"{nameof(ErrorLoggingState)} has become saturated. Last Error was: {msg}", "General", TraceEventType.Error); } },
+                    _ => { if (s.IsNormalizing) { self($"{nameof(ErrorLoggingState)} has normalized", "General", TraceEventType.Error); } }));
 
-                    var shouldLog = eType == TraceEventType.Error
-                        ? classification.IsNorm
-                            ? true
-                            : false
-                        : true;
+                var getState = logStatus.Compose(stateMachine);
 
-                    if (shouldLog)
-                        self(msg, cat, eType);
-                    else
-                        self(
-                            $"Not logging: Classification: {classification}",
-                            cat,
-                            TraceEventType.Verbose);
-                });
+                var doLog = eType == TraceEventType.Error
+                    ? getState().IsNormal
+                    : true;
+
+                if (doLog)
+                    self(msg, cat, eType);
+            });
 
         #region Benchmark
 

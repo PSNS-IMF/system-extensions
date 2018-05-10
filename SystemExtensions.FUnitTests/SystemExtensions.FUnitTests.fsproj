@@ -56,12 +56,13 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="ErrorLoggingStateTests.fs" />
+    <Compile Include="ThrottlingLoggerTests.fs" />
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="DatabaseTests.fs" />
     <Compile Include="CreateCommandTests.fs" />
     <Compile Include="BeginTransactionTests.fs" />
-    <Compile Include="LogTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">
