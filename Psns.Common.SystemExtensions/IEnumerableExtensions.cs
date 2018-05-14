@@ -17,12 +17,11 @@ namespace Psns.Common.SystemExtensions
             int pageNumber = 1;
             var chunk = items.Take(chunkSize);
 
-            do
+            while (chunk.Count() > 0)
             {
-                chunk = items.Skip(chunkSize * pageNumber++).Take(chunkSize);
                 yield return chunk;
+                chunk = items.Skip(chunkSize * pageNumber++).Take(chunkSize);
             }
-            while(chunk.Count() > 0);
         }
 
         public static UnitValue Iter<T>(this IEnumerable<T> self, Action<T> action)

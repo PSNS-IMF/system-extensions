@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net45;net451;net452;net46;netstandard1.6</TargetFrameworks>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <AssemblyVersion>2.0.0.1</AssemblyVersion>
-    <FileVersion>2.0.0.1</FileVersion>
+    <AssemblyVersion>2.0.0.2</AssemblyVersion>
+    <FileVersion>2.0.0.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Psns.Common.Analysis" Version="2018.4.30.4" />
-    <PackageReference Include="Psns.Common.Functional" Version="2018.4.26.5" />
+    <PackageReference Include="Psns.Common.Analysis" Version="2018.5.9.1" />
+    <PackageReference Include="Psns.Common.Functional" Version="2018.5.14.1" />
   </ItemGroup>
 
   <Choose>
