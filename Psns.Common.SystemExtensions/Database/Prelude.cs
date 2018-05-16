@@ -1,18 +1,35 @@
 ﻿using Psns.Common.Functional;
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using static Psns.Common.Functional.Prelude;
+using static Psns.Common.SystemExtensions.Prelude;
 
 namespace Psns.Common.SystemExtensions.Database
 {
+    /// <summary>
+    /// Stateless Database Helpers
+    /// </summary>
     public static partial class Prelude
     {
         /// <summary>
+        /// Build a connection string including MinPoolSize set to <paramref name="degreeOfParallelism"/>.
+        /// </summary>
+        /// <param name="existingString">An already valid connection string</param>
+        /// <param name="degreeOfParallelism">If <see cref="None"/>, then
+        /// <see cref="GetDegreeOfParallelism(Maybe{string})"/> is used.</param>
+        /// <returns></returns>
+        public static string BuildConnectionString(string existingString, Maybe<int> degreeOfParallelism) =>
+            new SqlConnectionStringBuilder(existingString)
+                .Tap(b => b.MinPoolSize = degreeOfParallelism | GetDegreeOfParallelism(None))
+                .ToString();
+
+        /// <summary>
         /// Creates a function that tries to: 
         ///   create a <see cref="IDbConnection"/>,
-        ///   run a <see cref="Func{IDbConnection, Try{T}}"/>, 
+        ///   run a <see cref="Func{IDbConnection, Try}"/>, 
         ///   and dispose of the <see cref="IDbConnection"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -25,7 +42,7 @@ namespace Psns.Common.SystemExtensions.Database
         /// Creates a function that tries to: 
         ///   create a <see cref="IDbConnection"/>,
         ///   open a <see cref="IDbConnection"/> asynchronously,
-        ///   run a <see cref="Func{IDbConnection, TryAsync{T}}"/>, 
+        ///   run a <see cref="Func{IDbConnection, TryAsync}"/>, 
         ///   and dispose of the <see cref="IDbConnection"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -44,7 +61,7 @@ namespace Psns.Common.SystemExtensions.Database
         /// <summary>
         /// Creates a function that tries to: 
         ///   create a <see cref="IDbTransaction"/>,
-        ///   run a <see cref="Func{IDbTransaction, Try{T}}"/>, 
+        ///   run a <see cref="Func{IDbTransaction, Try}"/>, 
         ///   and dispose of the <see cref="IDbTransaction"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -56,7 +73,7 @@ namespace Psns.Common.SystemExtensions.Database
         /// <summary>
         /// Creates a function that tries to: 
         ///   create a <see cref="IDbTransaction"/>,
-        ///   run a <see cref="Func{IDbTransaction, TryAsync{T}}"/> asynchronously, 
+        ///   run a <see cref="Func{IDbTransaction, TryAsync}"/> asynchronously, 
         ///   and dispose of the <see cref="IDbTransaction"/>.
         /// </summary>
         /// <typeparam name="T"></typeparam>

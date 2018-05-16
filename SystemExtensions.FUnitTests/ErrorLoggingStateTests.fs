@@ -32,7 +32,7 @@ let start = DateTime.Now
 let machine = (lib.StateMachineFactory.Par (basicLog, classify)).Invoke(fl.Some start)
 
 let map (a: ErrorLoggingState) =
-    List.Cons (a.Normal, [a.SaturatingAck; a.Saturated; a.NormalizingAck])
+    List.ofSeq (a.Normal.Cons([a.SaturatingAck; a.Saturated; a.NormalizingAck]))
     |> List.filter (fun m -> m.IsSome)
     |> List.fold (fun state m -> state + m.Match ((fun dt -> dt.Ticks), (fun () -> 0L))) 0L
     

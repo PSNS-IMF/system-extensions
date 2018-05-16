@@ -9,6 +9,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.3
+      ### Features
+      * Adding more helper functions
+
       ## 2.0.0.2
       ### Bug Fixes
       * Fixed bug with Chunk extension skipping items
@@ -57,7 +61,7 @@
         <dependency id="System.Threading.ThreadPool" version="4.3.0" exclude="Build,Analyzers" />
       </group>
       <group>
-        <dependency id="Psns.Common.Functional" version="2018.5.14.1" exclude="Build,Analyzers" />
+        <dependency id="Psns.Common.Functional" version="2018.5.16.1" exclude="Build,Analyzers" />
         <dependency id="Psns.Common.Analysis" version="2018.5.9.1" exclude="Build,Analyzers" />
       </group>
     </dependencies>

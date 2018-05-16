@@ -74,3 +74,8 @@ let ``it should return error text if action async fails.`` () =
 
     evalFailAsync connection |> should equal "fail"
     verify <@ connection.Dispose() @> once
+
+[<Test>]
+let ``it should add MinPoolSize to a connection string.`` () =
+    db.BuildConnectionString(String.Empty, ext.Some(4)) |> should equal "Min Pool Size=4"
+    db.BuildConnectionString(String.Empty, Maybe<int>.None) |> should equal (sprintf "Min Pool Size=%d" Environment.ProcessorCount)
