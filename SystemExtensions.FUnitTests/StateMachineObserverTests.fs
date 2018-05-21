@@ -9,9 +9,9 @@ open Psns.Common.SystemExtensions.Diagnostics
 type pre = Psns.Common.Functional.Prelude
 type ext = Psns.Common.SystemExtensions.Diagnostics.ErrorLoggingStateModule
 
-let sendMail (wasCalled:bool ref) = Func<string, Task * int>(fun _ ->
+let sendMail (wasCalled:bool ref) = Func<ErrorLoggingState, Task>(fun _ ->
     wasCalled := true
-    pre.UnitTask.Invoke(), 0)
+    pre.UnitTask.Invoke())
 
 let stateMachine state = Func<ErrorLoggingState>(fun () -> state)
 let observer = ext.StateMachineObserver()

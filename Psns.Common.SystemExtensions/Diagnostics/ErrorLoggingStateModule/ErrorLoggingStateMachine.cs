@@ -78,7 +78,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// </summary>
         /// <returns></returns>
         public static Func<
-            Func<string, Tuple<Task, int>>,
+            Func<ErrorLoggingState, Task>,
             Func<ErrorLoggingState>,
             ErrorLoggingState> StateMachineObserver()
         {
@@ -88,9 +88,9 @@ namespace Psns.Common.SystemExtensions.Diagnostics
                 stateMachine().Tap(
                     state => Match(state,
                         _ => state.IsSaturating && Interlocked.Increment(ref callCount) > 1
-                            ? Some(sendMail("has become Saturated"))
+                            ? Some(sendMail(state))
                             : None,
-                        _ => Some(Tuple(UnitTask(), 0))));
+                        _ => Some(UnitTask())));
         }
 
         internal static T LogState<T>(this Log log, T val, Func<T, string> format) =>

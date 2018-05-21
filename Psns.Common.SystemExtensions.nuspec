@@ -9,10 +9,14 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.5
+      ### Features
+      * Pass state to sendMail insteaad of string
+
       ## 2.0.0.4
       ### Features
       * Add StateMachineObserver
-      
+
       ## 2.0.0.3
       ### Features
       * Adding more helper functions
