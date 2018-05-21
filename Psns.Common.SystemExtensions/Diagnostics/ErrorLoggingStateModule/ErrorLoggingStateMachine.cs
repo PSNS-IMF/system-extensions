@@ -1,6 +1,8 @@
 ﻿using Psns.Common.Analysis;
 using Psns.Common.Functional;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using static Psns.Common.Analysis.Anomaly;
 using static Psns.Common.Functional.Prelude;
 
@@ -69,6 +71,27 @@ namespace Psns.Common.SystemExtensions.Diagnostics
                             ? prev.AsSaturated()
                             : prev.Saturating(),
                     Normal(start));
+
+        /// <summary>
+        /// Composes a function that only executes the given function after
+        /// an initial/first call when <see cref="ErrorLoggingState"/> is <c>Saturating</c>.
+        /// </summary>
+        /// <returns></returns>
+        public static Func<
+            Func<string, Tuple<Task, int>>,
+            Func<ErrorLoggingState>,
+            ErrorLoggingState> StateMachineObserver()
+        {
+            var callCount = 0;
+
+            return (sendMail, stateMachine) =>
+                stateMachine().Tap(
+                    state => Match(state,
+                        _ => state.IsSaturating && Interlocked.Increment(ref callCount) > 1
+                            ? Some(sendMail("has become Saturated"))
+                            : None,
+                        _ => Some(Tuple(UnitTask(), 0))));
+        }
 
         internal static T LogState<T>(this Log log, T val, Func<T, string> format) =>
             log.Log(val, format(val), LogCategory, System.Diagnostics.TraceEventType.Verbose);

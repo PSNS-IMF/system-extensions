@@ -64,6 +64,7 @@
     <Compile Include="CreateCommandTests.fs" />
     <Compile Include="BeginTransactionTests.fs" />
     <Compile Include="IEnumerableTests.fs" />
+    <Compile Include="StateMachineObserverTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">
@@ -84,7 +85,7 @@
       <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Psns.Common.Analysis">
-      <HintPath>..\packages\Psns.Common.Analysis.2018.5.9.1\lib\net46\Psns.Common.Analysis.dll</HintPath>
+      <HintPath>..\packages\Psns.Common.Analysis.2018.5.21.1\lib\net46\Psns.Common.Analysis.dll</HintPath>
     </Reference>
     <Reference Include="Psns.Common.Functional">
       <HintPath>..\packages\Psns.Common.Functional.2018.5.16.1\lib\netstandard1.0\Psns.Common.Functional.dll</HintPath>

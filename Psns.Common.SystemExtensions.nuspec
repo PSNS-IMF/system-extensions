@@ -9,6 +9,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.4
+      ### Features
+      * Add StateMachineObserver
+      
       ## 2.0.0.3
       ### Features
       * Adding more helper functions
@@ -62,7 +66,7 @@
       </group>
       <group>
         <dependency id="Psns.Common.Functional" version="2018.5.16.1" exclude="Build,Analyzers" />
-        <dependency id="Psns.Common.Analysis" version="2018.5.9.1" exclude="Build,Analyzers" />
+        <dependency id="Psns.Common.Analysis" version="2018.5.21.1" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
