@@ -9,9 +9,13 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.6
+      ### Features
+      * Include error message with ErrorLoggingStateMachine and StateObserver functions
+
       ## 2.0.0.5
       ### Features
-      * Pass state to sendMail insteaad of string
+      * Pass state to sendMail instead of string
 
       ## 2.0.0.4
       ### Features

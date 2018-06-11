@@ -8,7 +8,7 @@ open Psns.Common.SystemExtensions.Diagnostics
 
 type lib = Psns.Common.SystemExtensions.Diagnostics.ErrorLoggingStateModule
 
-let stateMachine state = Func<ErrorLoggingState> (fun () -> state)
+let stateMachine state = Func<string, ErrorLoggingState> (fun _ -> state)
 let getLog machine (messages: (TraceEventType * string) list ref) =
     (new Log(fun msg -> fun _ -> fun eType -> messages := (eType, msg) :: !messages)).WithThrottling(machine)
 let normalLog (messages: (TraceEventType * string) list ref) = stateMachine >> getLog <| lib.Normal() <| messages

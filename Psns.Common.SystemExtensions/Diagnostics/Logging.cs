@@ -40,7 +40,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// <param name="self"></param>
         /// <param name="stateMachine">A function that determines the current <see cref="ErrorLoggingState"/></param>
         /// <returns></returns>
-        public static Log WithThrottling(this Log self, Func<ErrorLoggingState> stateMachine) =>
+        public static Log WithThrottling(this Log self, Func<string, ErrorLoggingState> stateMachine) =>
             new Log((msg, cat, eType) =>
             {
                 var logStatus = fun((ErrorLoggingState s) =>
@@ -52,7 +52,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
                 var getState = logStatus.Compose(stateMachine);
 
                 var doLog = eType == TraceEventType.Error
-                    ? getState().IsNormal
+                    ? getState(msg).IsNormal
                     : true;
 
                 if (doLog)

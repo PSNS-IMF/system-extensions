@@ -9,13 +9,15 @@ open Psns.Common.SystemExtensions.Diagnostics
 type pre = Psns.Common.Functional.Prelude
 type ext = Psns.Common.SystemExtensions.Diagnostics.ErrorLoggingStateModule
 
-let sendMail (wasCalled:bool ref) = Func<ErrorLoggingState, Task>(fun _ ->
+let sendMail _ (wasCalled:bool ref) = Func<string, ErrorLoggingState, Task>(fun _ _ ->
     wasCalled := true
     pre.UnitTask.Invoke())
 
 let stateMachine state = Func<ErrorLoggingState>(fun () -> state)
 let observer = ext.StateMachineObserver()
-let observe state wasCalled = observer.Invoke (sendMail wasCalled, stateMachine state)
+let observe state wasCalled =
+    let msg = "error"
+    observer.Invoke (sendMail msg wasCalled, stateMachine state, msg)
 
 [<SetUp>]
 let ``execute once because first execution is skipped.`` () =

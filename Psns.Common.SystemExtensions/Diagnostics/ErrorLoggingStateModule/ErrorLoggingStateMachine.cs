@@ -78,17 +78,18 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         /// </summary>
         /// <returns></returns>
         public static Func<
-            Func<ErrorLoggingState, Task>,
+            Func<string, ErrorLoggingState, Task>,
             Func<ErrorLoggingState>,
+            string,
             ErrorLoggingState> StateMachineObserver()
         {
             var callCount = 0;
 
-            return (sendMail, stateMachine) =>
+            return (sendMail, stateMachine, errMsg) =>
                 stateMachine().Tap(
                     state => Match(state,
                         _ => state.IsSaturating && Interlocked.Increment(ref callCount) > 1
-                            ? Some(sendMail(state))
+                            ? Some(sendMail(errMsg, state))
                             : None,
                         _ => Some(UnitTask())));
         }
