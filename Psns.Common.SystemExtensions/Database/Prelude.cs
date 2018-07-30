@@ -132,7 +132,7 @@ namespace Psns.Common.SystemExtensions.Database
                     string.Join(", ", Possible(prams.OfType<object>()).Match(
                         some: objects => objects.Aggregate(
                             string.Empty,
-                            (prev, next) => Map(Possible((IDataParameter)next), posParam => posParam.Match(
+                            (prev, next) => map(Possible((IDataParameter)next), posParam => posParam.Match(
                                 some: param => prev += $"Name: {param.ParameterName} Value: {param.Value}",
                                 none: () => prev += $"Could not parse Parameter of Type: {next.GetType()}"))),
                         none: () => string.Empty)),

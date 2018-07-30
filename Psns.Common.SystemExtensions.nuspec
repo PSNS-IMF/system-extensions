@@ -9,6 +9,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.7
+      ### Features
+      * Incorporated breaking changes from Psns.Common.Functional
+
       ## 2.0.0.6
       ### Features
       * Include error message with ErrorLoggingStateMachine and StateObserver functions
@@ -73,7 +77,7 @@
         <dependency id="System.Threading.ThreadPool" version="4.3.0" exclude="Build,Analyzers" />
       </group>
       <group>
-        <dependency id="Psns.Common.Functional" version="2018.5.16.1" exclude="Build,Analyzers" />
+        <dependency id="Psns.Common.Functional" version="2018.7.25.1" exclude="Build,Analyzers" />
         <dependency id="Psns.Common.Analysis" version="2018.5.21.1" exclude="Build,Analyzers" />
       </group>
     </dependencies>

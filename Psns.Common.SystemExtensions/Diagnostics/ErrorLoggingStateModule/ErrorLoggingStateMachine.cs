@@ -25,7 +25,7 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             Func<Tuple<Delta, double>, Boundary<double>>,
             Func<Boundary<double>, double, Classification>,
             Classification> Classify => (getDeltaRate, applyBoundary, classify) =>
-                Map(
+                map(
                     getDeltaRate(),
                     deltaRate =>
                         classify.Par(

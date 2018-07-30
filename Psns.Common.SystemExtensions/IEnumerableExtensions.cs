@@ -38,8 +38,8 @@ namespace Psns.Common.SystemExtensions
             Action<T> func,
             Maybe<CancellationToken> token,
             Maybe<TaskScheduler> scheduler) =>
-                await Map(scheduler | TaskScheduler.Current, async chosenScheduler =>
-                    await Map(token | CancellationToken.None, async chosenToken =>
+                await map(scheduler | TaskScheduler.Current, async chosenScheduler =>
+                    await map(token | CancellationToken.None, async chosenToken =>
                         (await Task.WhenAll(self.Aggregate(
                             new List<Task<UnitValue>>(),
                             (list, next) =>
