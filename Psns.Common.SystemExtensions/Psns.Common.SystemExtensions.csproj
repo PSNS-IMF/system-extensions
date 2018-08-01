@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net451;net452;net46;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <AssemblyVersion>2.0.0.7</AssemblyVersion>
     <FileVersion>2.0.0.7</FileVersion>
@@ -12,12 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Psns.Common.Analysis" Version="2018.5.21.1" />
-    <PackageReference Include="Psns.Common.Functional" Version="2018.7.25.1" />
+    <PackageReference Include="Psns.Common.Analysis" Version="2018.8.6.1" />
+    <PackageReference Include="Psns.Common.Functional" Version="2018.7.30.2" />
   </ItemGroup>
 
   <Choose>
-    <When Condition="'$(TargetFramework)'=='net45' Or '$(TargetFramework)'=='net451' Or '$(TargetFramework)'=='net452' Or '$(TargetFramework)'=='net46'">
+    <When Condition="'$(TargetFramework)'=='net46'">
       <ItemGroup></ItemGroup>
     </When>
     <Otherwise>

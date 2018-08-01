@@ -5,43 +5,46 @@ open System.Diagnostics
 open FsUnit
 open NUnit.Framework
 open Psns.Common.SystemExtensions.Diagnostics
+open SystemExtensions.FUnitTests
 
-type lib = Psns.Common.SystemExtensions.Diagnostics.ErrorLoggingStateModule
+open aliases
 
-let stateMachine state = Func<string, ErrorLoggingState> (fun _ -> state)
+let stateMachine transitionState = Func<string, struct (ErrorStateTransition * ErrorState)> (fun _ -> transitionState)
 let getLog machine (messages: (TraceEventType * string) list ref) =
     (new Log(fun msg -> fun _ -> fun eType -> messages := (eType, msg) :: !messages)).WithThrottling(machine)
-let normalLog (messages: (TraceEventType * string) list ref) = stateMachine >> getLog <| lib.Normal() <| messages
+let log (messages: (TraceEventType * string) list ref) (transitionState: struct (ErrorStateTransition * ErrorState)) =
+    (stateMachine >> getLog <| transitionState <| messages)
+let normalLog messages = log messages struct (noTransition, normal)
+let info (log: Log) = log.Info("info")
+let error (log: Log) = log.Error("fail")
 let errorCount eType items = items |> List.filter (fun t -> fst t = eType) |> List.length
 
 [<Test>]
 let ``it should log if the event type is not Error.`` () =
     let messages = ref []
-    normalLog(messages).Info("info")
+    normalLog messages |> info
     !messages |> errorCount TraceEventType.Information |> should equal 1
 
 [<Test>]
 let ``it should log if the event type is an Error and state is normal.`` () =
     let messages = ref []
-    normalLog(messages).Error("fail")
+    normalLog messages |> error
     !messages |> errorCount TraceEventType.Error |> should equal 1
 
 [<Test>]
 let ``it should log if the event type is an Error and state is saturating.`` () =
     let messages = ref []
-    (stateMachine >> getLog <| lib.Normal().Saturating() <| messages).Error("fail")
+    struct (saturating, saturated) |> log messages |> error
     !messages |> errorCount TraceEventType.Error |> should equal 1
 
 [<Test>]
 let ``it should log if the event type is an Error and state is normalizing.`` () =
     let messages = ref []
-    (stateMachine >> getLog <| lib.Normal().Saturating().AsSaturated().Normalizing() <| messages).Error("fail")
-    !messages |> errorCount TraceEventType.Error |> should equal 1
+    struct (normalizing, normal) |> log messages |> error
+    !messages |> errorCount TraceEventType.Error |> should equal 2
 
 [<Test>]
 let ``it should not log if the event type is an Error and state is not normal.`` () =
-    let machine = lib.Normal().AsSaturated() |> stateMachine
     let messages = ref []
-    let log = getLog machine messages
-    log.Error("fail")
+    struct (noTransition, saturated) |> log messages |> error
     !messages |> errorCount TraceEventType.Error |> should equal 0

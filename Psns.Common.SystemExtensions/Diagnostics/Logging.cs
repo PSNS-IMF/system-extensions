@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using static Psns.Common.Functional.Prelude;
+using static Psns.Common.SystemExtensions.Diagnostics.ErrorLoggingStateModule;
 
 namespace Psns.Common.SystemExtensions.Diagnostics
 {
@@ -34,25 +35,26 @@ namespace Psns.Common.SystemExtensions.Diagnostics
 
         /// <summary>
         /// Enables throttling of Error logging based on the rate of incoming Errors.
-        /// Only Errors are throttled and are only logged if the current <see cref="ErrorLoggingState"/>
+        /// Only Errors are throttled and are only logged if the current <see cref="ErrorState"/>
         /// is <c>Normal</c>.
         /// </summary>
         /// <param name="self"></param>
-        /// <param name="stateMachine">A function that determines the current <see cref="ErrorLoggingState"/></param>
+        /// <param name="stateMachine">A function that determines the current 
+        /// <see cref="ErrorStateTransition"/> and <see cref="ErrorState"/></param>
         /// <returns></returns>
-        public static Log WithThrottling(this Log self, Func<string, ErrorLoggingState> stateMachine) =>
+        public static Log WithThrottling(this Log self, Func<string, (ErrorStateTransition, ErrorState)> stateMachine) =>
             new Log((msg, cat, eType) =>
             {
-                var logStatus = fun((ErrorLoggingState s) =>
-                    s.Tap(
-                    _ => self(s.ToString(), ErrorLoggingStateModule.LogCategory, TraceEventType.Verbose),
-                    _ => { if (s.IsSaturating) { self($"{nameof(ErrorLoggingState)} has become saturated. Last Error was: {msg}", "General", TraceEventType.Error); } },
-                    _ => { if (s.IsNormalizing) { self($"{nameof(ErrorLoggingState)} has normalized", "General", TraceEventType.Error); } }));
+                var logStatus = fun(((ErrorStateTransition, ErrorState) transitionState) =>
+                    transitionState.Tap(
+                    _ => self(transitionState.ToString(), ErrorLoggingStateModule.LogCategory, TraceEventType.Verbose),
+                    _ => { if (transitionState.Item1 == ErrorStateTransition.Saturating) { self($"{nameof(ErrorState)} has become saturated. Last Error was: {msg}", "General", TraceEventType.Error); } },
+                    _ => { if (transitionState.Item1 == ErrorStateTransition.Normalizing) { self($"{nameof(ErrorState)} has normalized", "General", TraceEventType.Error); } }));
 
                 var getState = logStatus.Compose(stateMachine);
 
                 var doLog = eType == TraceEventType.Error
-                    ? getState(msg).IsNormal
+                    ? map(getState(msg), tState => tState.Item2 == ErrorState.Normal)
                     : true;
 
                 if (doLog)
@@ -67,8 +69,8 @@ namespace Psns.Common.SystemExtensions.Diagnostics
         public static R Benchmark<T, R>(this Log self, T val, Func<T, R> func, string description = "") =>
             self.Benchmark(() => func(val), description, None);
 
-        public static UnitValue Benchmark(this Log self, Action act, string description = "") =>
-            self.Benchmark(() => { act(); return Unit; }, description, None);
+        public static Unit Benchmark(this Log self, Action act, string description = "") =>
+            self.Benchmark(() => { act(); return unit; }, description, None);
 
         public static Func<Either<L, R>> ComposeWithBench<T1, R, L>(
             this Func<T1, Either<L, R>> self,

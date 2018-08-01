@@ -1,7 +1,6 @@
 ﻿using Psns.Common.Analysis;
 using Psns.Common.Functional;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using static Psns.Common.Analysis.Anomaly;
 using static Psns.Common.Functional.Prelude;
@@ -9,7 +8,7 @@ using static Psns.Common.Functional.Prelude;
 namespace Psns.Common.SystemExtensions.Diagnostics
 {
     /// <summary>
-    /// Contains functions to help determine the current <see cref="ErrorLoggingState"/>.
+    /// Contains functions to help determine the current <see cref="ErrorState"/>.
     /// </summary>
     public static partial class ErrorLoggingStateModule
     {
@@ -54,47 +53,121 @@ namespace Psns.Common.SystemExtensions.Diagnostics
                 Boundary.ofValues(0d, 0d));
 
         /// <summary>
-        /// Composes a function that determines the current <see cref="ErrorLoggingState"/>
-        /// based on the memoized value of the previous <see cref="ErrorLoggingState"/>.
+        /// Possible error states
         /// </summary>
-        public static Func<
-            Log,
-            Func<Classification>,
-            Maybe<DateTime>,
-            Func<ErrorLoggingState>> StateMachineFactory => (log, classify, start) =>
-                Lib.memoizePrev(prev =>
-                    classify().IsNorm
-                        ? prev.IsSaturating || (prev.IsSaturated && !prev.IsNormalizing)
-                            ? prev.Normalizing()
-                            : prev.AsNormal()
-                        : prev.IsSaturating || (prev.IsSaturated && !prev.IsNormalizing)
-                            ? prev.AsSaturated()
-                            : prev.Saturating(),
-                    Normal(start));
+        public enum ErrorState
+        {
+            /// <summary>
+            /// The error rate is normal
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// The error rate is saturated
+            /// </summary>
+            Saturated
+        }
+
+        /// <summary>
+        /// Changes in <see cref="ErrorState"/>.
+        /// </summary>
+        public enum ErrorStateTransition
+        {
+            /// <summary>
+            /// No change
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// <see cref="ErrorState.Normal"/> -> <see cref="ErrorState.Saturated"/>
+            /// </summary>
+            Saturating,
+
+            /// <summary>
+            /// <see cref="ErrorState.Saturated"/> -> <see cref="ErrorState.Normal"/>
+            /// </summary>
+            Normalizing
+        }
+
+        /// <summary>
+        /// <see cref="ErrorState.Normal" /> as a <see cref="Functional.State{TValue, TState}"/>.
+        /// </summary>
+        /// <returns></returns>
+        public static State<Classification, ErrorState> NormalState(Classification classification) => oldState =>
+            map(ErrorState.Normal, state => (classification, state));
+
+        /// <summary>
+        /// <see cref="ErrorState.Saturated" /> as a <see cref="Functional.State{TValue, TState}"/>.
+        /// </summary>
+        /// <returns></returns>
+        public static State<Classification, ErrorState> SaturatedState(Classification classification) => oldState =>
+            map(ErrorState.Saturated, state => (classification, state));
+
+        /// <summary>
+        /// Composes a function that determines the current <see cref="ErrorState"/>
+        /// based on the result of <see cref="Func{Classification}"/>.
+        /// </summary>
+        /// <returns></returns>
+        public static Func<Func<Classification>, State<Classification, ErrorState>> ErrorRateStateMachine => classify =>
+            from classification in State<Classification, ErrorState>(classify())
+            from next in classification.IsNorm
+                ? NormalState(classification)
+                : SaturatedState(classification)
+            select next;
 
         /// <summary>
         /// Composes a function that only executes the given function after
-        /// an initial/first call when <see cref="ErrorLoggingState"/> is <c>Saturating</c>.
+        /// an initial/first call when<see cref="ErrorState"/> is becoming <c>Saturated</c>.
         /// </summary>
         /// <returns></returns>
         public static Func<
-            Func<string, ErrorLoggingState, Task>,
-            Func<ErrorLoggingState>,
+            Func<string, ErrorState, Task>,
+            State<Classification, ErrorState>,
             string,
-            ErrorLoggingState> StateMachineObserver()
-        {
-            var callCount = 0;
+            State<Classification, ErrorState>> StateMachineObserver => (sendMail, source, errMsg) =>
+                from classification in source.Bind((prev, current) =>
+                    (current.Item1, current.Item2.Tap(_ =>
+                        Match(DidChange(current.Item1, prev) && current.Item1.IsHigh && prev == ErrorState.Normal,
+                            AsEqual(true, __ => sendMail(errMsg, ErrorState.Saturated)),
+                            __ => UnitTask()))))
+                select classification;
 
-            return (sendMail, stateMachine, errMsg) =>
-                stateMachine().Tap(
-                    state => Match(state,
-                        _ => state.IsSaturating && Interlocked.Increment(ref callCount) > 1
-                            ? Some(sendMail(errMsg, state))
-                            : None,
-                        _ => Some(UnitTask())));
-        }
+        static bool DidChange(Classification classification, ErrorState state) =>
+            (classification.IsNorm && state != ErrorState.Normal)
+                || (!classification.IsNorm && state == ErrorState.Normal);
 
         internal static T LogState<T>(this Log log, T val, Func<T, string> format) =>
             log.Log(val, format(val), LogCategory, System.Diagnostics.TraceEventType.Verbose);
+    }
+
+    public static partial class Prelude
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TState"></typeparam>
+        /// <param name="self"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
+        public static State<TResult, TState> Bind<TValue, TResult, TState>(
+            this State<TValue, TState> self,
+            State<TResult, TState> next) => state =>
+                map(self(state), res => next(res.State));
+
+        /// <summary>
+        /// Binds a function to <paramref name="self"/> that takes both 
+        /// previous and current <see cref="Functional.State{TValue, TState}"/>s.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="TState"></typeparam>
+        /// <param name="self"></param>
+        /// <param name="binder">Takes the previous and the current <see cref="Functional.State{TValue, TState}"/></param>
+        /// <returns></returns>
+        public static State<TResult, TState> Bind<TValue, TResult, TState>(
+            this State<TValue, TState> self,
+            Func<TState, (TValue, TState), (TResult, TState)> binder) => prevState =>
+                map(self(prevState), state => binder(prevState, (state.Value, state.State)));
     }
 }

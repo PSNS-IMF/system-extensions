@@ -1,4 +1,4 @@
-﻿namespace SystemExtensions.FUnitTests.AssemblyInfo
+﻿namespace SystemExtensions.FUnitTests
 
 open System.Reflection
 open System.Runtime.CompilerServices

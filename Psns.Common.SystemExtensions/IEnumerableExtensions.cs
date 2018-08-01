@@ -24,31 +24,31 @@ namespace Psns.Common.SystemExtensions
             }
         }
 
-        public static UnitValue Iter<T>(this IEnumerable<T> self, Action<T> action)
+        public static Unit Iter<T>(this IEnumerable<T> self, Action<T> action)
         {
             foreach (var item in self)
             {
                 action(item);
             }
 
-            return Unit;
+            return unit;
         }
 
-        public static async Task<UnitValue> IterAsync<T>(this IEnumerable<T> self,
+        public static async Task<Unit> IterAsync<T>(this IEnumerable<T> self,
             Action<T> func,
             Maybe<CancellationToken> token,
             Maybe<TaskScheduler> scheduler) =>
                 await map(scheduler | TaskScheduler.Current, async chosenScheduler =>
                     await map(token | CancellationToken.None, async chosenToken =>
                         (await Task.WhenAll(self.Aggregate(
-                            new List<Task<UnitValue>>(),
+                            new List<Task<Unit>>(),
                             (list, next) =>
                             {
                                 list.Add(Task.Factory.StartNew(() =>
                                     {
                                         chosenToken.ThrowIfCancellationRequested();
                                         func(next);
-                                        return Unit;
+                                        return unit;
                                     },
                                     chosenToken,
                                     TaskCreationOptions.None,
@@ -58,7 +58,7 @@ namespace Psns.Common.SystemExtensions
                             })))
                         .FirstOrDefault()));
 
-        public static TryAsync<UnitValue> TryIterAsync<T>(this IEnumerable<T> self, 
+        public static TryAsync<Unit> TryIterAsync<T>(this IEnumerable<T> self, 
             Action<T> action,
             Maybe<CancellationToken> cancelToken,
             Maybe<TaskScheduler> scheduler) =>
