@@ -9,6 +9,10 @@
     <projectUrl>https://github.com/PSNS-IMF/system-extensions</projectUrl>
     <licenseUrl>https://github.com/PSNS-IMF/system-extensions/blob/master/LICENSE.md</licenseUrl>
     <releaseNotes>
+      ## 2.0.0.8
+      ### Features
+      * Redefine ErrorLoggingStateMachine so that current state can be read only
+
       ## 2.0.0.7
       ### Features
       * Incorporated breaking changes from Psns.Common.Functional
