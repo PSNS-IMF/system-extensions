@@ -50,8 +50,8 @@
     <Reference Include="NUnit.StaticExpect, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.StaticExpect.1.0.7\lib\net452\NUnit.StaticExpect.dll</HintPath>
     </Reference>
-    <Reference Include="Psns.Common.Functional, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Psns.Common.Functional.2018.7.30.2\lib\netstandard1.3\Psns.Common.Functional.dll</HintPath>
+    <Reference Include="Psns.Common.Functional, Version=2.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Psns.Common.Functional.2018.8.6.1\lib\netstandard1.0\Psns.Common.Functional.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">

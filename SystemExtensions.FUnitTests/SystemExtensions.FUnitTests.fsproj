@@ -96,7 +96,7 @@
       <HintPath>..\packages\Psns.Common.Analysis.2018.8.6.1\lib\net46\Psns.Common.Analysis.dll</HintPath>
     </Reference>
     <Reference Include="Psns.Common.Functional">
-      <HintPath>..\packages\Psns.Common.Functional.2018.7.30.2\lib\netstandard1.3\Psns.Common.Functional.dll</HintPath>
+      <HintPath>..\packages\Psns.Common.Functional.2018.8.6.1\lib\netstandard1.0\Psns.Common.Functional.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext">
