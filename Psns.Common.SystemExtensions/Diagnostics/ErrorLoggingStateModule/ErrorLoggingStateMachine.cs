@@ -115,25 +115,31 @@ namespace Psns.Common.SystemExtensions.Diagnostics
             select next;
 
         /// <summary>
-        /// Composes a function that only executes the given function after
-        /// an initial/first call when<see cref="ErrorState"/> is becoming <c>Saturated</c>.
+        /// Compose a function that sends an email if the trasition == <see cref="ErrorStateTransition.Saturating"/>.
         /// </summary>
-        /// <returns></returns>
         public static Func<
-            Func<string, ErrorState, Task>,
-            State<Classification, ErrorState>,
-            string,
-            State<Classification, ErrorState>> StateMachineObserver => (sendMail, source, errMsg) =>
-                from classification in source.Bind((prev, current) =>
-                    (current.Item1, current.Item2.Tap(_ =>
-                        Match(DidChange(current.Item1, prev) && current.Item1.IsHigh && prev == ErrorState.Normal,
-                            AsEqual(true, __ => sendMail(errMsg, ErrorState.Saturated)),
-                            __ => UnitTask()))))
-                select classification;
+            Func<string, string, Task>,
+            Func<(ErrorStateTransition, ErrorState)>,
+            Func<string, (ErrorStateTransition, ErrorState)>> StateTransitionObserver => (sendMail, getState) => msg =>
+                getState().Tap(transitionState =>
+                    Match(
+                        transitionState.Item1 == ErrorStateTransition.Saturating,
+                        AsEqual(true, _ => sendMail(msg, transitionState.Item2.ToString())),
+                        _ => UnitTask()));
 
-        static bool DidChange(Classification classification, ErrorState state) =>
-            (classification.IsNorm && state != ErrorState.Normal)
-                || (!classification.IsNorm && state == ErrorState.Normal);
+        /// <summary>Composes a function that determines the <see cref="ErrorStateTransition" />
+        /// by evaluating the current <see cref="Functional.State{Classification, ErrorState}"/>.</summary>
+        public static Func<
+            State<Classification, ErrorState>,
+            Func<(ErrorStateTransition, ErrorState), (ErrorStateTransition, ErrorState)>> StateTransitionClassifier => prevState => last =>
+                map(prevState(last.Item2), classState => map(classState.State, errorState =>
+                    map(
+                        Match(
+                            (last.Item2, errorState),
+                            AsEqual((ErrorState.Normal, ErrorState.Saturated), _ => ErrorStateTransition.Saturating),
+                            AsEqual((ErrorState.Saturated, ErrorState.Normal), _ => ErrorStateTransition.Normalizing),
+                            _ => ErrorStateTransition.None),
+                        transition => (transition, errorState))));
 
         internal static T LogState<T>(this Log log, T val, Func<T, string> format) =>
             log.Log(val, format(val), LogCategory, System.Diagnostics.TraceEventType.Verbose);

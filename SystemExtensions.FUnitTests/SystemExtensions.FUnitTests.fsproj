@@ -70,7 +70,7 @@
     <Compile Include="CreateCommandTests.fs" />
     <Compile Include="BeginTransactionTests.fs" />
     <Compile Include="IEnumerableTests.fs" />
-    <Compile Include="StateMachineObserverTests.fs" />
+    <Compile Include="StateMachineTests.fs" />
     <Compile Include="ErrorRateStateTests.fs" />
     <None Include="sandbox.fsx" />
   </ItemGroup>
