@@ -22,7 +22,7 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Update="NETStandard.Library" Version="2.0.2" />
+        <PackageReference Update="NETStandard.Library" Version="2.0.3" />
         <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
         <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
         <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
